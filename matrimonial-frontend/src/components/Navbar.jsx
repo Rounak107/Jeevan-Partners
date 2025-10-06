@@ -4,18 +4,17 @@ import { isLoggedIn, logout } from "../auth";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // Remove scroll effect to keep navbar static
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     setScrolled(window.scrollY > 20);
+  //   };
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   const handleLogout = () => {
     logout();
@@ -23,7 +22,7 @@ export default function Navbar() {
     setIsMenuOpen(false);
   };
 
-  const navLinkClass = (path, exact = false) => { // Removed `: string` type annotation
+  const navLinkClass = (path, exact = false) => {
     const isActive = exact 
       ? location.pathname === path 
       : location.pathname.startsWith(path);
@@ -37,44 +36,41 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-2xl border-b border-white/20' 
-          : 'bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700'
-      }`}>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-<Link 
-  to="/" 
-  className={`text-2xl font-bold transition-all duration-300 flex items-center group ${
-    scrolled ? 'text-gray-800' : 'text-white'
-  }`}
->
-  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-    <img 
-      src="/logo__Couple_Maraige-removebg-preview.png" 
-      alt="Couple Marriage Logo" 
-      className="w-8 h-8 object-contain"
-      onError={(e) => {
-        e.target.style.display = 'none';
-        e.target.nextSibling.style.display = 'block';
-      }}
-    />
-    {/* Fallback icon in case image fails to load */}
-    <svg 
-      className="w-6 h-6 text-purple-600 hidden" 
-      fill="none" 
-      stroke="currentColor" 
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    </svg>
-  </div>
-  <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-    Couple Marriage
-  </span>
-</Link>
+            <Link 
+              to="/" 
+              className="text-2xl font-bold transition-all duration-300 flex items-center group text-white"
+            >
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <img 
+                  src="/logo__Couple_Maraige-removebg-preview.png" 
+                  alt="Couple Marriage Logo" 
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    // If image fails to load, show fallback
+                    e.target.style.display = 'none';
+                    const fallback = e.target.nextElementSibling;
+                    if (fallback) fallback.style.display = 'block';
+                  }}
+                />
+                {/* Fallback icon in case image fails to load */}
+                <svg 
+                  className="w-6 h-6 text-purple-600" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  style={{ display: 'none' }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                Couple Marriage
+              </span>
+            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
@@ -120,17 +116,17 @@ export default function Navbar() {
                   </Link>
                   
                   <Link
-  to="/membership"
-  className={navLinkClass("/membership", true)}
->
-  <span className="flex items-center gap-2">
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4v4h8v-4c0-2.21-1.79-4-4-4zM6 20h12" />
-    </svg>
-    Membership
-  </span>
-  <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-</Link>
+                    to="/membership"
+                    className={navLinkClass("/membership", true)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4v4h8v-4c0-2.21-1.79-4-4-4zM6 20h12" />
+                      </svg>
+                      Membership
+                    </span>
+                    <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                  </Link>
 
                   <button
                     onClick={handleLogout}
@@ -166,9 +162,7 @@ export default function Navbar() {
 
             {/* Mobile menu button */}
             <button
-              className={`md:hidden p-2 rounded-xl transition-all duration-300 ${
-                scrolled ? 'text-gray-800 hover:bg-gray-100' : 'text-white hover:bg-white/10'
-              }`}
+              className="md:hidden p-2 rounded-xl transition-all duration-300 text-white hover:bg-white/10"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,19 +233,19 @@ export default function Navbar() {
                   </Link>
 
                   <Link
-  to="/membership"
-  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
-    location.pathname === "/membership"
-      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-      : "text-white/80 hover:text-white hover:bg-white/10"
-  }`}
-  onClick={() => setIsMenuOpen(false)}
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4v4h8v-4c0-2.21-1.79-4-4-4zM6 20h12" />
-  </svg>
-  Membership
-</Link>
+                    to="/membership"
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                      location.pathname === "/membership"
+                        ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4v4h8v-4c0-2.21-1.79-4-4-4zM6 20h12" />
+                    </svg>
+                    Membership
+                  </Link>
                   
                   <button
                     onClick={handleLogout}
