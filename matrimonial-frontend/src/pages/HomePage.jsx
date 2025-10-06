@@ -9,7 +9,8 @@ import {
   Sparkles, 
   CheckCircle,
   ArrowRight,
-  Star
+  Star,
+  Crown
 } from "lucide-react";
 
 export default function HomePage() {
@@ -66,6 +67,16 @@ export default function HomePage() {
                   >
                     <Users className="w-5 h-5" />
                     <span>My Profile</span>
+                  </Link>
+                  
+                  {/* NEW MEMBERSHIP BUTTON */}
+                  <Link 
+                    to="/membership" 
+                    className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                  >
+                    <Crown className="w-5 h-5" />
+                    <span>Membership</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               </div>
@@ -251,7 +262,7 @@ export default function HomePage() {
               Join our community today and start your journey towards a beautiful relationship
             </p>
             
-            {!loggedIn && (
+            {!loggedIn ? (
               <Link 
                 to="/register" 
                 className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-10 py-5 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
@@ -259,6 +270,17 @@ export default function HomePage() {
                 <span>Get Started Free</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
+            ) : (
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link 
+                  to="/membership" 
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-10 py-5 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>Upgrade to Premium</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             )}
           </div>
         </div>
