@@ -46,7 +46,7 @@ export default function Navbar() {
             >
               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <img 
-                  src="/logo__Couple_Maraige-removebg-preview.png" 
+                  src="/images/logo__Couple_Maraige-removebg-preview.png"
                   alt="Couple Marriage Logo" 
                   className="w-8 h-8 object-contain"
                   onError={(e) => {
