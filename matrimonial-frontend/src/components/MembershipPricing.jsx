@@ -157,119 +157,57 @@ const MembershipPricing = () => {
         setLoading(false);
     }, []);
 
-    const initiatePayment = async (plan) => {
-    if (plan.price === 0) {
-        alert('Free plan selected! You can start using the free features immediately.');
-        return;
-    }
-
-    setProcessingPayment(true);
-    
-    try {
-        const response = await API.post('/payments/initiate', {
-            plan_id: plan.id,
-            plan_name: plan.name,
-            amount: plan.price,
-            currency: plan.currency
-        });
-
-        console.log('Razorpay response:', response.data);
-
-        if (response.data.success) {
-            // Load Razorpay script dynamically
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => {
-                const options = {
-                    key: response.data.key,
-                    amount: response.data.amount,
-                    currency: response.data.currency,
-                    name: response.data.name,
-                    description: response.data.description,
-                    order_id: response.data.order_id,
-                    handler: async function (paymentResponse) {
-                        console.log('Payment successful:', paymentResponse);
-                        
-                        try {
-                            // Verify payment with backend
-                            const verifyResponse = await API.post('/payments/success', {
-                                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                                razorpay_order_id: paymentResponse.razorpay_order_id,
-                                razorpay_signature: paymentResponse.razorpay_signature
-                            });
-
-                            if (verifyResponse.data.success) {
-                                alert('Payment successful! Your membership has been activated.');
-                                // You can redirect or update UI here
-                            } else {
-                                alert('Payment verification failed: ' + verifyResponse.data.message);
-                            }
-                        } catch (error) {
-                            console.error('Payment verification error:', error);
-                            alert('Payment verification failed. Please contact support.');
-                        }
-                    },
-                    prefill: response.data.prefill,
-                    notes: response.data.notes,
-                    theme: response.data.theme,
-                    // Enable all payment methods
-                    method: {
-                        netbanking: true,
-                        card: true,
-                        upi: true,
-                        wallet: true
-                    },
-                    bank: {
-                        'HDFC': true,
-                        'ICICI': true,
-                        'SBI': true,
-                        'AXIS': true
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            console.log('Payment modal dismissed');
-                            setProcessingPayment(false);
-                        }
-                    }
-                };
-
-                const razorpay = new window.Razorpay(options);
-                razorpay.open();
-            };
-            
-            document.body.appendChild(script);
-
-        } else {
-            throw new Error('Failed to initiate payment');
+    // SIMPLE PAYU REDIRECT FUNCTION
+    const redirectToPayU = (plan) => {
+        if (plan.price === 0) {
+            alert('Free plan selected! You can start using the free features immediately.');
+            return;
         }
-        
-    } catch (error) {
-        console.error('Payment initiation failed:', error);
-        console.error('Error details:', error.response?.data);
-        alert('Payment initiation failed. Please try again.');
-        setProcessingPayment(false);
-    }
-};
 
+        setProcessingPayment(true);
+        
+        // Direct redirect to PayU with plan details
+        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
+        
+        // Redirect to PayU
+        window.location.href = payuUrl;
+    };
+
+    // UPDATED: Handle plan selection
     const handleSelectPlan = (plan) => {
         setSelectedPlan(plan);
         
         if (plan.price === 0) {
             // Free plan - no payment needed
-            initiatePayment(plan);
+            alert('Free plan selected! You can start using the free features immediately.');
         } else {
-            // Paid plan - show confirmation before payment
+            // Paid plan - show confirmation before redirecting to PayU
             const userConfirmed = window.confirm(
                 `You have selected: ${plan.name}\n\n` +
                 `Amount: ₹${plan.price}\n` +
                 `Duration: ${plan.duration}\n\n` +
-                `Do you want to proceed to payment?`
+                `You will be redirected to PayU for secure payment.\n` +
+                `Do you want to proceed?`
             );
             
             if (userConfirmed) {
-                initiatePayment(plan);
+                redirectToPayU(plan);
             }
         }
+    };
+
+    // Direct payment without confirmation
+    const handleDirectPayment = (plan) => {
+        if (plan.price === 0) {
+            alert('Free plan selected! You can start using the free features immediately.');
+            return;
+        }
+        
+        setProcessingPayment(true);
+        
+        // Direct redirect to PayU with plan details
+        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
+        window.location.href = payuUrl;
     };
 
     if (loading) {
@@ -301,8 +239,8 @@ const MembershipPricing = () => {
                             <div className="flex items-center space-x-3">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                                 <div>
-                                    <p className="text-gray-800 font-semibold">Processing Payment</p>
-                                    <p className="text-gray-600 text-sm">Redirecting to secure payment gateway...</p>
+                                    <p className="text-gray-800 font-semibold">Redirecting to Payment</p>
+                                    <p className="text-gray-600 text-sm">Taking you to secure PayU gateway...</p>
                                 </div>
                             </div>
                         </div>
@@ -326,14 +264,14 @@ const MembershipPricing = () => {
                                     Change Plan
                                 </button>
                                 <button
-                                    onClick={() => initiatePayment(selectedPlan)}
+                                    onClick={() => handleDirectPayment(selectedPlan)}
                                     disabled={processingPayment}
                                     className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center"
                                 >
                                     {processingPayment ? (
                                         <>
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                            Processing...
+                                            Redirecting...
                                         </>
                                     ) : (
                                         `Pay ₹${selectedPlan.price}`
@@ -412,9 +350,9 @@ const MembershipPricing = () => {
                                     </ul>
                                 </div>
 
-                                {/* Select Button */}
+                                {/* UPDATED: Select Button - Now redirects to PayU */}
                                 <button
-                                    onClick={() => handleSelectPlan(plan)}
+                                    onClick={() => handleDirectPayment(plan)}
                                     disabled={processingPayment}
                                     className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors mt-auto ${
                                         plan.popular
@@ -427,12 +365,12 @@ const MembershipPricing = () => {
                                     {processingPayment ? (
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                            Processing...
+                                            Redirecting...
                                         </div>
                                     ) : plan.price === 0 ? (
                                         'Get Started Free'
                                     ) : (
-                                        `Buy Now - ₹${plan.price}`
+                                        `Pay ₹${plan.price}`
                                     )}
                                 </button>
                             </div>
@@ -661,7 +599,7 @@ const MembershipPricing = () => {
                                     ))}
                                 </tr>
                                 
-                                {/* Action */}
+                                {/* UPDATED: Action row with PayU button */}
                                 <tr className="hover:bg-gray-750">
                                     <td className="px-6 py-6 text-sm font-medium text-gray-300 border-r border-gray-600">
                                         🎯 Get Started
@@ -671,7 +609,7 @@ const MembershipPricing = () => {
                                             plan.popular ? 'bg-blue-900/10' : ''
                                         }`}>
                                             <button
-                                                onClick={() => handleSelectPlan(plan)}
+                                                onClick={() => handleDirectPayment(plan)}
                                                 disabled={processingPayment}
                                                 className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
                                                     plan.popular
@@ -691,7 +629,7 @@ const MembershipPricing = () => {
                     </div>
                 </div>
 
-                {/* Payment Information */}
+                {/* UPDATED: Payment Information - Changed from Razorpay to PayU */}
                 <div className="bg-blue-900 border border-blue-700 rounded-lg p-6 mb-8">
                     <div className="flex items-center mb-4">
                         <div className="bg-blue-600 p-2 rounded-lg mr-3">
@@ -704,19 +642,19 @@ const MembershipPricing = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-blue-200">
                         <div className="flex items-center">
                             <span className="mr-2">🔒</span>
-                            SSL Encrypted Payment
+                            PayU Secure Payment
                         </div>
                         <div className="flex items-center">
                             <span className="mr-2">💳</span>
-                            Multiple Payment Options
+                            Credit/Debit Cards
                         </div>
                         <div className="flex items-center">
-                            <span className="mr-2">🛡️</span>
-                            Razorpay Secure Gateway
+                            <span className="mr-2">🏦</span>
+                            Net Banking Available
                         </div>
                         <div className="flex items-center">
                             <span className="mr-2">📧</span>
-                            Instant Email Receipt
+                            Instant Confirmation
                         </div>
                     </div>
                 </div>
