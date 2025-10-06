@@ -48,11 +48,11 @@ useEffect(() => {
   to="/" 
   className="text-2xl font-bold transition-all duration-300 flex items-center group text-white"
 >
-  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+  <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
     <img 
-      src="/logo__Couple_Maraige-removebg-preview.png"
+      src="http://localhost:5173/logo__Couple_Marriage.png"
       alt="Couple Marriage Logo" 
-      className="w-8 h-8 object-contain"
+      className="w-12 h-12 object-contain"
       onError={(e) => {
         console.error('Image failed to load');
         e.target.style.display = 'none';
