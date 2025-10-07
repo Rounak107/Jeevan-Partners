@@ -14,7 +14,8 @@ if (enablePusher) {
     const reverbHost = import.meta.env.VITE_REVERB_HOST || '127.0.0.1';
     const reverbPort = parseInt(import.meta.env.VITE_REVERB_PORT || '6001');
     const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+    //const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://couplemarriage.com/api';
 
     console.log('🎯 Echo configuration:', {
         key: reverbAppKey ? '***' + reverbAppKey.slice(-4) : 'MISSING',
