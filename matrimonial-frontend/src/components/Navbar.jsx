@@ -50,7 +50,7 @@ useEffect(() => {
 >
   <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
     <img 
-      src="http://localhost:5173/logo__Couple_Marriage.png"
+      src="https://www.couplemarriage.com/logo__Couple_Marriage.png"
       alt="Couple Marriage Logo" 
       className="w-12 h-12 object-contain"
       onError={(e) => {
