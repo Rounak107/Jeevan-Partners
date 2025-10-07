@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
 
-const STORAGE_BASE = "http://127.0.0.1:8000/storage";
-const normalizePath = (p) => String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
+const BASE_URL =
+  import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace("/api", "")
+    : "https://couplemarriage.com";
+
+// Build the proper storage URL for live site
+const STORAGE_BASE = `${BASE_URL}/storage`;
+const normalizePath = (p) =>
+  String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
 const imgUrl = (p) => `${STORAGE_BASE}/${normalizePath(p)}`;
 
 export default function LikesPage() {
