@@ -87,9 +87,16 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  const getImageUrl = (imagePath) => {
-    return `http://127.0.0.1:8000/storage/${imagePath}`;
-  };
+  // Derive correct base like every other page
+const BASE_URL =
+  import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace("/api", "")
+    : "https://couplemarriage.com";
+
+const getImageUrl = (imagePath) =>
+  `${BASE_URL}/storage/${String(imagePath || "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")}`;
 
   return (
     <div className="bg-grey-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
