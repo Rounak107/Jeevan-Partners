@@ -10,14 +10,43 @@ import {
   CheckCircle,
   ArrowRight,
   Star,
-  Crown
+  Crown,
+  Smartphone,
+  X
 } from "lucide-react";
 
 export default function HomePage() {
   const loggedIn = isLoggedIn();
-  
+  const [showAppBanner, setShowAppBanner] = React.useState(true);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-purple-50">
+      {/* Android App Coming Soon Banner */}
+      {showAppBanner && (
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center space-x-2">
+                <Smartphone className="w-5 h-5" />
+                <span className="font-semibold">Android App Coming Soon!</span>
+                <span className="hidden sm:inline">Get ready for a seamless mobile experience</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="hidden md:inline text-green-100 text-sm">
+                  Stay tuned for the launch
+                </span>
+                <button
+                  onClick={() => setShowAppBanner(false)}
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Decorative Elements */}
@@ -25,7 +54,7 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+        <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${showAppBanner ? 'pt-16' : 'pt-20'} pb-16`}>
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-lg">

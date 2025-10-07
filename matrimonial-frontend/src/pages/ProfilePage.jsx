@@ -38,6 +38,10 @@ export default function ProfilePage() {
   // NEW: state for previewing full image
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace('/api', '')
+  : 'https://couplemarriage.com';
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -169,9 +173,9 @@ export default function ProfilePage() {
     );
   }
 
-  const img = profile?.profile_photo
-    ? `http://127.0.0.1:8000/storage/${profile.profile_photo}`
-    : null;
+ const img = profile?.profile_photo
+  ? `${BASE_URL}/storage/${profile.profile_photo}`
+  : null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -318,16 +322,12 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {profile.photos.map((photo, index) => (
                       <img
-                        key={index}
-                        src={`http://127.0.0.1:8000/storage/${photo}`}
-                        alt={`Photo ${index + 1}`}
-                        className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80"
-                        onClick={() =>
-                          setSelectedPhoto(
-                            `http://127.0.0.1:8000/storage/${photo}`
-                          )
-                        }
-                      />
+  key={index}
+  src={`${BASE_URL}/storage/${photo}`}
+  alt={`Photo ${index + 1}`}
+  className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80"
+  onClick={() => setSelectedPhoto(`${BASE_URL}/storage/${photo}`)}
+/>
                     ))}
                   </div>
 
