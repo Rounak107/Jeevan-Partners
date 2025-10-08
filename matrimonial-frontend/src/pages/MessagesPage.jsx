@@ -78,44 +78,9 @@ function MessagesPage() {
   const storageUrl = (p) => `${appBase()}/storage/${normalizePath(p)}`;
 
   // Debugging helper to test Echo connection
-const testWebSocketConnection = async () => {
-    if (!window.Echo) {
-        console.error('Echo not available');
-        return;
-    }
 
-    try {
-        // Try joining the private channel
-        const channel = window.Echo.private(`private-conversation.${id}`);
-        
-        channel.here((users) => {
-            console.log('👥 Users in channel:', users);
-        });
-
-        channel.joining((user) => {
-            console.log('🟢 User joining:', user);
-        });
-
-        channel.leaving((user) => {
-            console.log('🔴 User leaving:', user);
-        });
-
-        console.log('✅ Test channel joined successfully');
-    } catch (error) {
-        console.error('❌ Test channel join failed:', error);
-    }
-};
 
 // Run WebSocket test after Echo is ready
-useEffect(() => {
-    if (window.Echo && id && currentUserId) {
-        testWebSocketConnection();
-    }
-}, [window.Echo, id, currentUserId]);
-
-  useEffect(() => {
-    fetchConversation();
-  }, [id]);
 
   // Socket registration
   useEffect(() => {
@@ -124,74 +89,35 @@ useEffect(() => {
     }
   }, [currentUserId, socket, registerUser]);
 
-  // Socket event listeners - SIMPLIFIED AND FIXED
+  // ---- Realtime message listener (Pusher/Echo) ----
 useEffect(() => {
-    if (!window.Echo || !id || !currentUserId) {
-        console.log('⏳ Waiting for Echo/conversation ID...');
-        return;
-    }
+  if (!window.Echo || !id) return;
 
-    console.log('🎯 Setting up Echo listeners for conversation:', id, 'User:', currentUserId);
+  console.log("📞 Subscribing to channel conversation." + id);
 
-    const setupListeners = () => {
-        try {
-            // Listen for connection state
-            window.Echo.connector.pusher.connection.bind('connected', () => {
-                console.log('✅ WebSocket connected, subscribing to channel...');
-            });
+  const channel = window.Echo.private(`conversation.${id}`);
 
-            // Subscribe to the private channel
-            const channel = window.Echo.private(`private-conversation.${id}`);
-            
-            // Listen for new messages
-            channel.listen('.new-message', (data) => {
-                console.log('💬 New message received via Echo:', data);
-                
-                if (data.message) {
-                    const normalizedMessage = normalizeMessageStructure(data.message);
-                    setMessages(prev => {
-                        // Avoid duplicates
-                        if (prev.some(msg => msg.id === normalizedMessage.id)) {
-                            return prev;
-                        }
-                        return [...prev, normalizedMessage];
-                    });
-                }
-            });
+  channel.listen(".new-message", (data) => {
+    if (!data || !data.message) return;
+    console.log("💬 Live message received:", data.message);
 
-            // Listen for subscription success
-            channel.subscribed(() => {
-                console.log('✅ Successfully subscribed to channel:', `private-conversation.${id}`);
-            });
+    const normalized = normalizeMessageStructure(data.message);
+    setMessages((prev) =>
+      prev.some((m) => m.id === normalized.id) ? prev : [...prev, normalized]
+    );
+  });
 
-            // Listen for subscription errors
-            channel.error((error) => {
-                console.error('❌ Channel subscription error:', error);
-            });
+  channel.subscribed(() =>
+    console.log("✅ Subscribed to conversation." + id)
+  );
 
-            console.log('✅ Echo listeners set up successfully for conversation:', id);
+  channel.error((e) => console.error("Socket error:", e));
 
-            return channel;
-        } catch (error) {
-            console.error('❌ Error setting up Echo listeners:', error);
-            setTimeout(setupListeners, 2000); // Retry after 2 seconds
-        }
-    };
-
-    const channel = setupListeners();
-
-    return () => {
-        console.log('🧹 Cleaning up Echo listeners for conversation:', id);
-        if (channel) {
-            try {
-                channel.stopListening('.new-message');
-                window.Echo.leave(`private-conversation.${id}`);
-            } catch (e) {
-                console.error('Error cleaning up listeners:', e);
-            }
-        }
-    };
-}, [id, currentUserId]);
+  return () => {
+    console.log("🧹 Unsubscribing from conversation." + id);
+    window.Echo.leave(`conversation.${id}`);
+  };
+}, [id]);
 
   useEffect(() => {
     scrollToBottom();

@@ -30,7 +30,7 @@ class NewMessage implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PresenceChannel('private-conversation.' . $this->message->conversation_id);
+        return new \Illuminate\Broadcasting\PrivateChannel('conversation.' . $this->message->conversation_id);
     }
 
     public function broadcastAs()
