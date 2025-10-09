@@ -19,6 +19,11 @@ window.Echo = new Echo({
   key: import.meta.env.VITE_PUSHER_KEY || '12a1161315a422de01e1',
   cluster: import.meta.env.VITE_PUSHER_CLUSTER || 'ap2',
   forceTLS: true,
+  encrypted: true,
+  wsHost: 'ws-ap2.pusher.com',
+  wsPort: 443,
+  wssPort: 443,
+  enabledTransports: ['ws', 'wss'],
   authEndpoint: 'https://couplemarriage.com/broadcasting/auth',
   auth: {
     headers: {
@@ -26,5 +31,6 @@ window.Echo = new Echo({
     },
   },
 });
+
 
 console.log("✅ Laravel Echo initialized successfully");
