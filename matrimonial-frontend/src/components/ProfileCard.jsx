@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { HeartIcon, ChatBubbleLeftIcon, UserIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/solid';
+// FIXED: Use v2 imports (remove /outline and /solid)
+import { 
+  HeartIcon, 
+  ChatBubbleLeftIcon, 
+  UserIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon 
+} from '@heroicons/react/24/outline';
+import { 
+  HeartIcon as HeartSolidIcon 
+} from '@heroicons/react/24/solid';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
 
