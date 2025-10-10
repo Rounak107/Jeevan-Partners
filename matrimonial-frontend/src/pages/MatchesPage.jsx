@@ -19,6 +19,7 @@ export default function MatchesPage() {
   });
   const [showPreview, setShowPreview] = useState(false);
   const [userLikes, setUserLikes] = useState([]);
+  const [meta, setMeta] = useState({}); // ADDED: For pagination
   const navigate = useNavigate();
 
   const checkProfile = async () => {
@@ -46,16 +47,34 @@ export default function MatchesPage() {
     }
   };
 
-  const fetchMatches = async () => {
+  // UPDATED: Fixed fetchMatches with pagination and proper filtering
+  const fetchMatches = async (page = 1) => {
     if (!hasProfile) return;
     setLoading(true);
     try {
-      const res = await API.get("/api/recommendations", { params: filters });
+      // FIXED: Use 'any' for gender when no filter is selected
+      const params = { 
+        ...filters, 
+        page, 
+        per_page: 24,
+        gender: filters.gender === "" ? "any" : filters.gender
+      };
+      
+      console.log("Fetching matches with params:", params);
+      
+      const res = await API.get("/api/recommendations", { params });
+      console.log("API Response:", res.data);
+      
       const list = res.data?.data || res.data || [];
-      const filtered = myProfile
-        ? list.filter((p) => p.user_id !== myProfile.user_id)
-        : list;
-      setProfiles(filtered);
+      
+      // Set profiles and pagination meta
+      setProfiles(list);
+      setMeta({
+        current_page: res.data.current_page || 1,
+        last_page: res.data.last_page || 1,
+        total: res.data.total || 0,
+        per_page: res.data.per_page || 24
+      });
     } catch (err) {
       console.error("Error fetching matches:", err);
       if (err.response?.status === 400) {
@@ -72,11 +91,11 @@ export default function MatchesPage() {
 
   useEffect(() => {
     if (hasProfile) {
-      fetchMatches();
+      fetchMatches(1); // Start from page 1
       fetchUserLikes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasProfile, filters]);
+  }, [hasProfile, filters]); // Removed fetchMatches from dependencies
 
   const isProfileLiked = (profile) => {
     const profileUserId = profile.user_id || profile.user?.id || profile.id;
@@ -116,6 +135,36 @@ export default function MatchesPage() {
     setHasProfile(true);
     setMyProfile(profileData);
     setShowCreateProfile(false);
+  };
+
+  // ADDED: Pagination controls component
+  const PaginationControls = () => {
+    if (meta.last_page <= 1) return null;
+    
+    return (
+      <div className="flex justify-center items-center gap-4 mt-8">
+        <button 
+          onClick={() => fetchMatches(meta.current_page - 1)}
+          disabled={meta.current_page === 1}
+          className="px-4 py-2 bg-rose-600 text-white rounded disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-rose-700"
+        >
+          Previous
+        </button>
+        
+        <span className="text-gray-700 font-medium">
+          Page {meta.current_page} of {meta.last_page} 
+          {meta.total && ` (Total: ${meta.total} profiles)`}
+        </span>
+        
+        <button 
+          onClick={() => fetchMatches(meta.current_page + 1)}
+          disabled={meta.current_page === meta.last_page}
+          className="px-4 py-2 bg-rose-600 text-white rounded disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-rose-700"
+        >
+          Next
+        </button>
+      </div>
+    );
   };
 
   if (!hasProfile) {
@@ -162,8 +211,17 @@ export default function MatchesPage() {
       <FilterPanel
         filters={filters}
         setFilters={setFilters}
-        onSearch={fetchMatches}
+        onSearch={() => fetchMatches(1)}
       />
+
+      {/* ADDED: Debug Info */}
+      <div className="mb-4 p-3 bg-rose-100 rounded-lg">
+        <p className="text-sm text-rose-800">
+          Showing {profiles.length} profiles 
+          {meta.total && ` out of ${meta.total} total`}
+          {filters.gender && ` • Filter: ${filters.gender === "" ? "All Genders" : filters.gender}`}
+        </p>
+      </div>
 
       {loading ? (
         <div className="text-center py-10 text-rose-800">
@@ -198,17 +256,22 @@ export default function MatchesPage() {
               search criteria.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {profiles.map((p) => (
-                <ProfileCard
-                  key={p.id}
-                  profile={p}
-                  onMessageClick={startConversation}
-                  onLike={handleProfileLike}
-                  initialLiked={isProfileLiked(p)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profiles.map((p) => (
+                  <ProfileCard
+                    key={p.id}
+                    profile={p}
+                    onMessageClick={startConversation}
+                    onLike={handleProfileLike}
+                    initialLiked={isProfileLiked(p)}
+                  />
+                ))}
+              </div>
+              
+              {/* ADDED: Pagination Controls */}
+              <PaginationControls />
+            </>
           )}
         </>
       )}
