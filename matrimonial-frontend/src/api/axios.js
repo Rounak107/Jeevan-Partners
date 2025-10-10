@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://couplemarriage.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://www.couplemarriage.com/api',
   headers: { 'Accept': 'application/json' },
    withCredentials: true,
 });
