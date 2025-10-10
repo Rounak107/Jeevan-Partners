@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { HeartIcon, ChatBubbleLeftIcon, UserIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { HeartIcon, ChatBubbleLeftIcon, UserIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline';
+import { HeartIcon as HeartSolidIcon } from '@heroicons/react/solid';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,9 +10,14 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Get the user ID consistently from different profile structures
+  // FIXED: Use profile ID for navigation, not user ID
+  const getProfileId = () => {
+    return profile.id; // This is the PROFILE ID from the database
+  };
+
+  // Get the user ID for likes (keep this for like functionality)
   const getUserId = () => {
-    return profile.user_id || profile.user?.id || profile.id;
+    return profile.user_id || profile.user?.id;
   };
 
   // Get all images (profile photo + additional photos)
@@ -30,7 +35,6 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
         const userId = getUserId();
         const isProfileLiked = likedProfiles.some(
           likedProfile => likedProfile.user_id === userId || 
-                         likedProfile.id === userId ||
                          (likedProfile.user && likedProfile.user.id === userId)
         );
         setIsLiked(isProfileLiked);
@@ -42,8 +46,9 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     checkIfLiked();
   }, [profile]);
 
+  // FIXED: Use profile ID for navigation
   const navigateToProfile = () => {
-    navigate(`/profile/${getUserId()}`);
+    navigate(`/profile/${getProfileId()}`);
   };
 
   const handleLike = async () => {
@@ -57,18 +62,15 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
       }
 
       if (!isLiked) {
-        // FIXED: Remove /api prefix since baseURL already includes it
         await API.post(`/api/likes/${userId}`);
         setIsLiked(true);
         if (onLike) onLike(profile);
       } else {
-        // FIXED: Remove /api prefix since baseURL already includes it
         await API.delete(`/api/likes/${userId}`);
         setIsLiked(false);
       }
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Show more detailed error message
       if (error.response) {
         alert(`Failed to like profile: ${error.response.data.message || 'Server error'}`);
       } else {
@@ -87,21 +89,20 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  // Derive correct base like every other page
-const BASE_URL =
-  import.meta.env.VITE_API_URL
-    ? import.meta.env.VITE_API_URL.replace("/api", "")
-    : "https://couplemarriage.com";
+  const BASE_URL =
+    import.meta.env.VITE_API_URL
+      ? import.meta.env.VITE_API_URL.replace("/api", "")
+      : "https://couplemarriage.com";
 
-const getImageUrl = (imagePath) =>
-  `${BASE_URL}/storage/${String(imagePath || "")
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")}`;
+  const getImageUrl = (imagePath) =>
+    `${BASE_URL}/storage/${String(imagePath || "")
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "")}`;
 
   return (
-    <div className="bg-grey-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
       {/* Image Carousel */}
-      <div className="relative h-72 bg-rose-700 overflow-hidden">
+      <div className="relative h-72 bg-gray-700 overflow-hidden">
         {allImages.length > 0 ? (
           <>
             <img
@@ -175,7 +176,7 @@ const getImageUrl = (imagePath) =>
             <h3 className="text-xl font-semibold text-white truncate">
               {profile.user?.name}
             </h3>
-            <p className="text-dark-400">
+            <p className="text-gray-400">
               {profile.age} years • {profile.city}
             </p>
           </div>
@@ -184,17 +185,17 @@ const getImageUrl = (imagePath) =>
         {/* Additional Info */}
         <div className="space-y-2 mb-4">
           {profile.occupation && (
-            <p className="text-dark-300 text-sm">
+            <p className="text-gray-300 text-sm">
               💼 {profile.occupation}
             </p>
           )}
           {profile.education && (
-            <p className="text-dark-300 text-sm">
+            <p className="text-gray-300 text-sm">
               🎓 {profile.education}
             </p>
           )}
           {profile.about && (
-            <p className="text-dark-300 text-sm line-clamp-2">
+            <p className="text-gray-300 text-sm line-clamp-2">
               {profile.about}
             </p>
           )}
