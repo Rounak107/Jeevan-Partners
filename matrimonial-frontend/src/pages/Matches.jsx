@@ -20,22 +20,27 @@ export default function Matches() {
   }, []);
 
   async function fetchMatches(page = 1) {
-    setLoading(true);
-    try {
-      const params = { ...filters, page };
-      const res = await api.get('/api/recommendations', { params });
-      setProfiles(res.data.data || res.data);
-      setMeta({
-        current_page: res.data.current_page,
-        last_page: res.data.last_page
-      });
-    } catch (err) {
-      console.error(err);
-      alert('Error loading matches. Open console for details.');
-    } finally {
-      setLoading(false);
-    }
+  setLoading(true);
+  try {
+    const params = { ...filters, page, per_page: 24 }; // Increased from 12 to 24
+    const res = await api.get('/api/recommendations', { params });
+    setProfiles(res.data.data || res.data);
+    setMeta({
+      current_page: res.data.current_page,
+      last_page: res.data.last_page,
+      total: res.data.total // Add total for debugging
+    });
+    
+    // Debug log
+    console.log('Fetched profiles:', res.data.data?.length || res.data.length);
+    console.log('Total available:', res.data.total);
+  } catch (err) {
+    console.error(err);
+    alert('Error loading matches. Open console for details.');
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div style={{ padding: 20 }}>
