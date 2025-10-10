@@ -15,12 +15,18 @@ if (token) {
 // expose axios so Echo (and other libs) can use it
 window.axios = axios;
 
-// Ensure CSRF cookie exists (if using session-based login)
-try {
-  await axios.get('/sanctum/csrf-cookie'); // returns 204 and sets XSRF-TOKEN + laravel_session cookies
-} catch (err) {
-  console.warn('Could not fetch CSRF cookie:', err?.message || err);
-}
+// Initialize CSRF cookie in an async function
+const initializeCSRF = async () => {
+  try {
+    await axios.get('/sanctum/csrf-cookie'); // returns 204 and sets XSRF-TOKEN + laravel_session cookies
+    console.log("✅ CSRF cookie initialized");
+  } catch (err) {
+    console.warn('Could not fetch CSRF cookie:', err?.message || err);
+  }
+};
+
+// Call the async function but don't block Echo initialization
+initializeCSRF();
 
 Pusher.logToConsole = true;
 window.Pusher = Pusher;
@@ -35,15 +41,13 @@ window.Echo = new Echo({
   wsPort: 443,
   wssPort: 443,
   enabledTransports: ['ws', 'wss'],
-  // DO NOT set authEndpoint to a full URL if axios.baseURL is set; we'll use axios explicitly below
   auth: {
     headers: {
       Accept: 'application/json',
-      // X-CSRF-TOKEN will be included automatically by axios if present
     }
   },
   // custom authorizer — ensures axios (with Authorization header and cookies) is used
-  authorizer: (channel) => { // Removed unused 'options' parameter
+  authorizer: (channel) => {
     return {
       authorize: (socketId, callback) => {
         axios.post('/broadcasting/auth', {
