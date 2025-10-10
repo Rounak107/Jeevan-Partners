@@ -214,14 +214,20 @@ export default function MatchesPage() {
         onSearch={() => fetchMatches(1)}
       />
 
-      {/* ADDED: Debug Info */}
-      <div className="mb-4 p-3 bg-rose-100 rounded-lg">
-        <p className="text-sm text-rose-800">
-          Showing {profiles.length} profiles 
-          {meta.total && ` out of ${meta.total} total`}
-          {filters.gender && ` • Filter: ${filters.gender === "" ? "All Genders" : filters.gender}`}
-        </p>
-      </div>
+      // In MatchesPage.jsx, update the debug info section:
+<div className="mb-4 p-3 bg-rose-100 rounded-lg">
+  <p className="text-sm text-rose-800">
+    Showing {profiles.length} profiles 
+    {meta.total && ` out of ${meta.total} total`}
+    {` • Filter: ${
+      filters.gender === "" 
+        ? `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})` 
+        : filters.gender === "any" 
+          ? "All Genders" 
+          : filters.gender
+    }`}
+  </p>
+</div>
 
       {loading ? (
         <div className="text-center py-10 text-rose-800">
