@@ -166,6 +166,8 @@ useEffect(() => {
     }, 100);
   };
 
+
+  
   // UPDATED: Improved fetchConversation with better attachment handling
   async function fetchConversation() {
     try {
@@ -222,6 +224,12 @@ useEffect(() => {
       setLoading(false);
     }
   }
+
+useEffect(() => {
+  if (id) {
+    fetchConversation();
+  }
+}, [id]);
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
