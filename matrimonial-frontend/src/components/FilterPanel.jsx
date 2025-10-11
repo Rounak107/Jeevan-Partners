@@ -6,10 +6,11 @@ export default function FilterPanel({ filters, setFilters, onSearch }) {
     setFilters(newFilters);
   };
 
-  const handleSearchClick = () => {
-    console.log("🔍 Searching with filters:", filters);
-    onSearch();
-  };
+ const handleSearchClick = () => {
+  console.log("🔍 FRONTEND: Searching with filters:", filters);
+  console.log("🔍 FRONTEND: Gender filter value:", filters.gender);
+  onSearch(); // This should trigger fetchMatches(1)
+};
 
   const clearFilters = () => {
     const clearedFilters = {

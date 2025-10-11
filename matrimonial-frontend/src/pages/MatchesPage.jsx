@@ -92,12 +92,16 @@ export default function MatchesPage() {
 
  useEffect(() => {
   if (hasProfile) {
-    // Only fetch matches initially, not on every filter change
     fetchMatches(1);
     fetchUserLikes();
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [hasProfile]); // Remove filters from dependencies
+}, [hasProfile]); // Remove automatic filter-based fetching
+
+// Add this new useEffect for manual searches
+useEffect(() => {
+  console.log("🔍 Filters changed:", filters);
+}, [filters]);
 
   const isProfileLiked = (profile) => {
     const profileUserId = profile.user_id || profile.user?.id || profile.id;
