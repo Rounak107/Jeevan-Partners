@@ -47,24 +47,23 @@ export default function MatchesPage() {
     }
   };
 
-  // FIXED: Proper gender parameter handling
   const fetchMatches = async (page = 1) => {
     if (!hasProfile) return;
     setLoading(true);
     try {
-      // FIXED: Don't send 'any' - let backend handle default logic
       const params = { 
         ...filters, 
         page, 
         per_page: 24
-        // Remove the gender conversion - send exactly what user selected
       };
       
-      console.log("Fetching matches with params:", params);
-      console.log("🔍 Fetching matches with gender filter:", filters.gender);
+      console.log("🔍 Fetching matches with ALL params:", params);
+      console.log("📍 City filter:", filters.city);
+      console.log("🎂 Age range:", `${filters.min_age || '18'}-${filters.max_age || '60'}`);
+      console.log("⚧️ Gender filter:", filters.gender);
       
       const res = await API.get("/api/recommendations", { params });
-      console.log("API Response:", res.data);
+      console.log("✅ API Response received:", res.data);
       
       const list = res.data?.data || res.data || [];
       
@@ -76,8 +75,17 @@ export default function MatchesPage() {
         total: res.data.total || 0,
         per_page: res.data.per_page || 24
       });
+
+      // Log actual results for verification
+      console.log("📊 Results - Total:", res.data.total, "Current:", list.length);
+      if (list.length > 0) {
+        console.log("📍 Cities in results:", [...new Set(list.map(p => p.city || 'Unknown'))]);
+        console.log("🎂 Ages in results:", list.map(p => p.age));
+        console.log("⚧️ Genders in results:", [...new Set(list.map(p => p.gender))]);
+      }
+      
     } catch (err) {
-      console.error("Error fetching matches:", err);
+      console.error("❌ Error fetching matches:", err);
       if (err.response?.status === 400) {
         setHasProfile(false);
       }
@@ -90,18 +98,17 @@ export default function MatchesPage() {
     checkProfile();
   }, []);
 
- useEffect(() => {
-  if (hasProfile) {
-    fetchMatches(1);
-    fetchUserLikes();
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [hasProfile]); // Remove automatic filter-based fetching
+  useEffect(() => {
+    if (hasProfile) {
+      fetchMatches(1);
+      fetchUserLikes();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasProfile]);
 
-// Add this new useEffect for manual searches
-useEffect(() => {
-  console.log("🔍 Filters changed:", filters);
-}, [filters]);
+  useEffect(() => {
+    console.log("🔍 Filters changed:", filters);
+  }, [filters]);
 
   const isProfileLiked = (profile) => {
     const profileUserId = profile.user_id || profile.user?.id || profile.id;
@@ -172,19 +179,36 @@ useEffect(() => {
     );
   };
 
-  // FIXED: Get current filter display text
-const getFilterDisplayText = () => {
-  if (filters.gender === "any") {
-    return "All Genders";
-  } else if (filters.gender === "male") {
-    return "Male";
-  } else if (filters.gender === "female") {
-    return "Female";
-  } else if (filters.gender === "other") {
-    return "Other";
-  }
-  return `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})`;
-};
+  const getFilterDisplayText = () => {
+    if (filters.gender === "any") {
+      return "All Genders";
+    } else if (filters.gender === "male") {
+      return "Male";
+    } else if (filters.gender === "female") {
+      return "Female";
+    } else if (filters.gender === "other") {
+      return "Other";
+    }
+    return `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})`;
+  };
+
+  const getActiveFiltersText = () => {
+    const activeFilters = [];
+    
+    if (filters.gender && filters.gender !== "any") {
+      activeFilters.push(`Gender: ${getFilterDisplayText()}`);
+    }
+    
+    if (filters.city) {
+      activeFilters.push(`City: "${filters.city}"`);
+    }
+    
+    if (filters.min_age || filters.max_age) {
+      activeFilters.push(`Age: ${filters.min_age || '18'}-${filters.max_age || '60'}`);
+    }
+    
+    return activeFilters.length > 0 ? activeFilters.join(' • ') : 'No filters applied';
+  };
 
   if (!hasProfile) {
     return (
@@ -233,12 +257,14 @@ const getFilterDisplayText = () => {
         onSearch={() => fetchMatches(1)}
       />
 
-      {/* FIXED: Debug Info */}
-      <div className="mb-4 p-3 bg-rose-100 rounded-lg">
-        <p className="text-sm text-rose-800">
-          Showing {profiles.length} profiles 
-          {meta.total && ` out of ${meta.total} total`}
-          {` • Filter: ${getFilterDisplayText()}`}
+      {/* Enhanced Debug Info */}
+      <div className="mb-4 p-3 bg-rose-100 rounded-lg border border-rose-300">
+        <p className="text-sm text-rose-800 font-medium">
+          🔍 Active Filters: {getActiveFiltersText()}
+        </p>
+        <p className="text-xs text-rose-600 mt-1">
+          📊 Showing {profiles.length} profiles{meta.total && ` of ${meta.total} total`}
+          {profiles.length > 0 && ` • Cities: ${[...new Set(profiles.map(p => p.city || 'Unknown'))].join(', ')}`}
         </p>
       </div>
 
