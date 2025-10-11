@@ -125,40 +125,56 @@ useEffect(() => {
 
   // NEW: Function to normalize message structure for consistent handling
   const normalizeMessageStructure = (message) => {
-    const normalized = { ...message };
-    
-    // Ensure attachments is always an array with proper structure
-    if (normalized.attachments) {
-      if (!Array.isArray(normalized.attachments)) {
-        normalized.attachments = [normalized.attachments];
-      }
-      
-      // Process each attachment to ensure it has proper URL
-      normalized.attachments = normalized.attachments.map(att => {
-        if (typeof att === 'string') {
-          return { 
-            url: att.startsWith('http') ? att : storageUrl(att), 
-            name: 'Attachment',
-            type: 'unknown'
-          };
-        }
-        
-        // If attachment is object but URL is relative, convert to full URL
-        if (att.url && !att.url.startsWith('http') && !att.url.startsWith('blob:')) {
-          return {
-            ...att,
-            url: att.url.startsWith('/storage/') 
-              ? `${appBase()}${att.url}`
-              : storageUrl(att.url)
-          };
-        }
-        
-        return att;
-      });
-    }
-    
+  const normalized = { ...message };
+
+  let atts = normalized.attachments;
+
+  if (!atts) {
+    normalized.attachments = [];
     return normalized;
-  };
+  }
+
+  // Parse JSON stringified attachments
+  if (typeof atts === 'string') {
+    try {
+      const parsed = JSON.parse(atts);
+      atts = Array.isArray(parsed) ? parsed : [parsed];
+    } catch (e) {
+      atts = [atts];
+    }
+  } else if (!Array.isArray(atts)) {
+    atts = [atts];
+  }
+
+  normalized.attachments = atts.map((att) => {
+    if (typeof att === 'string') {
+      const url =
+        att.startsWith('http') || att.startsWith('blob:')
+          ? att
+          : storageUrl(att);
+      return { url, name: 'Attachment', type: 'unknown' };
+    }
+
+    const obj = { ...att };
+    const maybeUrlOrPath = obj.url || obj.path || '';
+
+    if (maybeUrlOrPath) {
+      if (maybeUrlOrPath.startsWith('http') || maybeUrlOrPath.startsWith('blob:')) {
+        obj.url = maybeUrlOrPath;
+      } else if (maybeUrlOrPath.startsWith('/storage/')) {
+        obj.url = `${appBase()}${maybeUrlOrPath.replace(/\/{2,}/g, '/')}`;
+      } else {
+        obj.url = storageUrl(maybeUrlOrPath);
+      }
+    } else {
+      obj.url = '';
+    }
+
+    return obj;
+  });
+
+  return normalized;
+};
 
   const scrollToBottom = () => {
     setTimeout(() => {
