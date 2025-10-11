@@ -20,49 +20,46 @@ export default function HomePage() {
   const [showAppBanner, setShowAppBanner] = React.useState(true);
 
   // Load ad scripts using useEffect
-  useEffect(() => {
-    // Remove the old problematic script if it exists
-    const oldScript = document.querySelector('script[src*="effectivegatecpm.com"]');
-    if (oldScript) {
-      oldScript.remove();
-    }
+ useEffect(() => {
+  // Create a container where the ads will load
+  const adContainer = document.getElementById("ad-container");
+  if (!adContainer) return;
 
-    // Load the first ad script
-    const script1 = document.createElement('script');
-    script1.type = 'text/javascript';
-    script1.src = '//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js';
-    script1.async = true;
-    
-    // Load the second ad script
-    const script2 = document.createElement('script');
-    script2.type = 'text/javascript';
-    script2.innerHTML = `
-      atOptions = {
-        'key' : 'd89152563405b3e145016685931bd36b',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };
-    `;
-    
-    const script3 = document.createElement('script');
-    script3.type = 'text/javascript';
-    script3.src = '//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js';
-    script3.async = true;
+  // Clean up existing ads (if re-rendered)
+  adContainer.innerHTML = "";
 
-    // Add scripts to head
-    document.head.appendChild(script1);
-    document.head.appendChild(script2);
-    document.head.appendChild(script3);
+  // === 1️⃣ First Script: JS SYNC (NO ADBLOCK BYPASS) ===
+  const script1 = document.createElement("script");
+  script1.type = "text/javascript";
+  script1.src = "//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js";
+  script1.async = true;
+  adContainer.appendChild(script1);
 
-    // Cleanup function
-    return () => {
-      if (document.head.contains(script1)) document.head.removeChild(script1);
-      if (document.head.contains(script2)) document.head.removeChild(script2);
-      if (document.head.contains(script3)) document.head.removeChild(script3);
+  // === 2️⃣ Second Script Set ===
+  const script2 = document.createElement("script");
+  script2.type = "text/javascript";
+  script2.innerHTML = `
+    atOptions = {
+      'key' : 'd89152563405b3e145016685931bd36b',
+      'format' : 'iframe',
+      'height' : 90,
+      'width' : 728,
+      'params' : {}
     };
-  }, []);
+  `;
+  adContainer.appendChild(script2);
+
+  const script3 = document.createElement("script");
+  script3.type = "text/javascript";
+  script3.src = "//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js";
+  script3.async = true;
+  adContainer.appendChild(script3);
+
+  // Cleanup when unmounting
+  return () => {
+    adContainer.innerHTML = "";
+  };
+}, []);
 
   const handleBuyNow = () => {
     // Replace with your actual course URL
