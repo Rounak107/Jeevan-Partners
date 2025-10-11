@@ -26,8 +26,7 @@ export default function Matches() {
         ...filters, 
         page, 
         per_page: 24,
-        // If gender is empty string, send 'any' to show all genders
-        gender: filters.gender === '' ? 'any' : filters.gender
+        
       };
       
       console.log('Fetching matches with params:', params);

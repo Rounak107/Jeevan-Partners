@@ -19,7 +19,7 @@ export default function MatchesPage() {
   });
   const [showPreview, setShowPreview] = useState(false);
   const [userLikes, setUserLikes] = useState([]);
-  const [meta, setMeta] = useState({}); // ADDED: For pagination
+  const [meta, setMeta] = useState({});
   const navigate = useNavigate();
 
   const checkProfile = async () => {
@@ -47,17 +47,17 @@ export default function MatchesPage() {
     }
   };
 
-  // UPDATED: Fixed fetchMatches with pagination and proper filtering
+  // FIXED: Proper gender parameter handling
   const fetchMatches = async (page = 1) => {
     if (!hasProfile) return;
     setLoading(true);
     try {
-      // FIXED: Use 'any' for gender when no filter is selected
+      // FIXED: Don't send 'any' - let backend handle default logic
       const params = { 
         ...filters, 
         page, 
-        per_page: 24,
-        gender: filters.gender === "" ? "any" : filters.gender
+        per_page: 24
+        // Remove the gender conversion - send exactly what user selected
       };
       
       console.log("Fetching matches with params:", params);
@@ -91,11 +91,11 @@ export default function MatchesPage() {
 
   useEffect(() => {
     if (hasProfile) {
-      fetchMatches(1); // Start from page 1
+      fetchMatches(1);
       fetchUserLikes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasProfile, filters]); // Removed fetchMatches from dependencies
+  }, [hasProfile, filters]);
 
   const isProfileLiked = (profile) => {
     const profileUserId = profile.user_id || profile.user?.id || profile.id;
@@ -137,7 +137,6 @@ export default function MatchesPage() {
     setShowCreateProfile(false);
   };
 
-  // ADDED: Pagination controls component
   const PaginationControls = () => {
     if (meta.last_page <= 1) return null;
     
@@ -165,6 +164,20 @@ export default function MatchesPage() {
         </button>
       </div>
     );
+  };
+
+  // FIXED: Get current filter display text
+  const getFilterDisplayText = () => {
+    if (filters.gender === "") {
+      return `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})`;
+    } else if (filters.gender === "male") {
+      return "Male";
+    } else if (filters.gender === "female") {
+      return "Female";
+    } else if (filters.gender === "other") {
+      return "Other";
+    }
+    return "All Genders";
   };
 
   if (!hasProfile) {
@@ -214,20 +227,14 @@ export default function MatchesPage() {
         onSearch={() => fetchMatches(1)}
       />
 
-      // In MatchesPage.jsx, update the debug info section:
-<div className="mb-4 p-3 bg-rose-100 rounded-lg">
-  <p className="text-sm text-rose-800">
-    Showing {profiles.length} profiles 
-    {meta.total && ` out of ${meta.total} total`}
-    {` • Filter: ${
-      filters.gender === "" 
-        ? `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})` 
-        : filters.gender === "any" 
-          ? "All Genders" 
-          : filters.gender
-    }`}
-  </p>
-</div>
+      {/* FIXED: Debug Info */}
+      <div className="mb-4 p-3 bg-rose-100 rounded-lg">
+        <p className="text-sm text-rose-800">
+          Showing {profiles.length} profiles 
+          {meta.total && ` out of ${meta.total} total`}
+          {` • Filter: ${getFilterDisplayText()}`}
+        </p>
+      </div>
 
       {loading ? (
         <div className="text-center py-10 text-rose-800">
@@ -275,7 +282,6 @@ export default function MatchesPage() {
                 ))}
               </div>
               
-              {/* ADDED: Pagination Controls */}
               <PaginationControls />
             </>
           )}
