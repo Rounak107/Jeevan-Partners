@@ -226,6 +226,51 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* Ad Banner - Added below Why Choose Us section */}
+        <div className="mt-16 text-center">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 shadow-xl">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              VIEW ALL COURSES
+            </h3>
+            <div className="text-3xl md:text-4xl font-extrabold text-yellow-300 mb-4">
+              HUGE MEXECON
+            </div>
+            <div className="text-xl md:text-2xl font-bold text-white mb-6">
+              WONSTER IS HERE
+            </div>
+            <button className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              BUY NOW
+            </button>
+          </div>
+          
+          {/* Ad Script */}
+          <div className="mt-8 flex justify-center">
+            <script type="text/javascript">
+              {`
+                atOptions = {
+                  'key' : 'd89152563405b3e145016685931bd36b',
+                  'format' : 'iframe',
+                  'height' : 90,
+                  'width' : 728,
+                  'params' : {}
+                };
+              `}
+            </script>
+            <script 
+              type="text/javascript" 
+              src="//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js"
+            ></script>
+          </div>
+
+          {/* Facilities Section */}
+          <div className="mt-12 bg-white rounded-2xl p-8 shadow-lg">
+            <h4 className="text-2xl font-bold text-gray-900 mb-6 text-center">Our Facilities</h4>
+            <p className="text-gray-600 text-center text-lg leading-relaxed">
+              We provide well-equipped labs, experienced instructors, flexible class timings, and a supportive learning environment to ensure the best training experience for every student.
+            </p>
+          </div>
+        </div>
       </div>
       
       {/* Testimonials Section */}
@@ -319,7 +364,7 @@ export default function HomePage() {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-400">
-            © 2024 Matrimonial. Made with ❤️ for bringing people together.
+            © 2025 Matrimonial. Made with ❤️ for bringing people together.
           </p>
         </div>
       </footer>
