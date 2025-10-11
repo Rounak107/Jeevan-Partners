@@ -12,7 +12,7 @@ export default function MatchesPage() {
   const [hasProfile, setHasProfile] = useState(false);
   const [showCreateProfile, setShowCreateProfile] = useState(false);
   const [filters, setFilters] = useState({
-    gender: "",
+    gender: "any",
     city: "",
     min_age: "",
     max_age: "",
@@ -169,18 +169,18 @@ export default function MatchesPage() {
   };
 
   // FIXED: Get current filter display text
-  const getFilterDisplayText = () => {
-    if (filters.gender === "") {
-      return `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})`;
-    } else if (filters.gender === "male") {
-      return "Male";
-    } else if (filters.gender === "female") {
-      return "Female";
-    } else if (filters.gender === "other") {
-      return "Other";
-    }
+const getFilterDisplayText = () => {
+  if (filters.gender === "any") {
     return "All Genders";
-  };
+  } else if (filters.gender === "male") {
+    return "Male";
+  } else if (filters.gender === "female") {
+    return "Female";
+  } else if (filters.gender === "other") {
+    return "Other";
+  }
+  return `Default (${myProfile?.gender === 'male' ? 'Female' : 'Male'})`;
+};
 
   if (!hasProfile) {
     return (

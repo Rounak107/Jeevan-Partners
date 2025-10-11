@@ -4,7 +4,6 @@ export default function FilterPanel({ filters, setFilters, onSearch }) {
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    // Don't call onSearch here - wait for user to click Search button
   };
 
   const handleSearchClick = () => {
@@ -14,13 +13,12 @@ export default function FilterPanel({ filters, setFilters, onSearch }) {
 
   const clearFilters = () => {
     const clearedFilters = {
-      gender: "",
+      gender: "any", // Changed from "" to "any"
       city: "",
       min_age: "",
       max_age: "",
     };
     setFilters(clearedFilters);
-    // Don't search immediately after clear
   };
 
   return (
@@ -37,7 +35,7 @@ export default function FilterPanel({ filters, setFilters, onSearch }) {
         onChange={e => handleFilterChange('gender', e.target.value)} 
         className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-rose-500"
       >
-        <option value="">Any Gender</option>
+        <option value="any">Any Gender</option> {/* Changed from "" to "any" */}
         <option value="male">Male</option>
         <option value="female">Female</option>
         <option value="other">Other</option>
