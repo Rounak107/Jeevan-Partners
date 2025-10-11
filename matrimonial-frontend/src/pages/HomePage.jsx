@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { isLoggedIn } from "../auth";
 import { 
@@ -18,6 +18,56 @@ import {
 export default function HomePage() {
   const loggedIn = isLoggedIn();
   const [showAppBanner, setShowAppBanner] = React.useState(true);
+
+  // Load ad scripts using useEffect
+  useEffect(() => {
+    // Remove the old problematic script if it exists
+    const oldScript = document.querySelector('script[src*="effectivegatecpm.com"]');
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    // Load the first ad script
+    const script1 = document.createElement('script');
+    script1.type = 'text/javascript';
+    script1.src = '//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js';
+    script1.async = true;
+    
+    // Load the second ad script
+    const script2 = document.createElement('script');
+    script2.type = 'text/javascript';
+    script2.innerHTML = `
+      atOptions = {
+        'key' : 'd89152563405b3e145016685931bd36b',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };
+    `;
+    
+    const script3 = document.createElement('script');
+    script3.type = 'text/javascript';
+    script3.src = '//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js';
+    script3.async = true;
+
+    // Add scripts to head
+    document.head.appendChild(script1);
+    document.head.appendChild(script2);
+    document.head.appendChild(script3);
+
+    // Cleanup function
+    return () => {
+      if (document.head.contains(script1)) document.head.removeChild(script1);
+      if (document.head.contains(script2)) document.head.removeChild(script2);
+      if (document.head.contains(script3)) document.head.removeChild(script3);
+    };
+  }, []);
+
+  const handleBuyNow = () => {
+    // Replace with your actual course URL
+    window.open('https://your-actual-course-website.com', '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-purple-50">
@@ -239,28 +289,17 @@ export default function HomePage() {
             <div className="text-xl md:text-2xl font-bold text-white mb-6">
               WONSTER IS HERE
             </div>
-            <button className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button 
+              onClick={handleBuyNow}
+              className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
               BUY NOW
             </button>
           </div>
           
-          {/* Ad Script */}
-          <div className="mt-8 flex justify-center">
-            <script type="text/javascript">
-              {`
-                atOptions = {
-                  'key' : 'd89152563405b3e145016685931bd36b',
-                  'format' : 'iframe',
-                  'height' : 90,
-                  'width' : 728,
-                  'params' : {}
-                };
-              `}
-            </script>
-            <script 
-              type="text/javascript" 
-              src="//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js"
-            ></script>
+          {/* Ad container - the scripts will populate this */}
+          <div id="ad-container" className="mt-8 flex justify-center">
+            {/* Ads will be loaded here by the scripts */}
           </div>
 
           {/* Facilities Section */}
