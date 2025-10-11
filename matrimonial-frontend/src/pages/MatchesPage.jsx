@@ -61,6 +61,7 @@ export default function MatchesPage() {
       };
       
       console.log("Fetching matches with params:", params);
+      console.log("🔍 Fetching matches with gender filter:", filters.gender);
       
       const res = await API.get("/api/recommendations", { params });
       console.log("API Response:", res.data);
@@ -89,13 +90,14 @@ export default function MatchesPage() {
     checkProfile();
   }, []);
 
-  useEffect(() => {
-    if (hasProfile) {
-      fetchMatches(1);
-      fetchUserLikes();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasProfile, filters]);
+ useEffect(() => {
+  if (hasProfile) {
+    // Only fetch matches initially, not on every filter change
+    fetchMatches(1);
+    fetchUserLikes();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [hasProfile]); // Remove filters from dependencies
 
   const isProfileLiked = (profile) => {
     const profileUserId = profile.user_id || profile.user?.id || profile.id;
