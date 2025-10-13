@@ -154,12 +154,13 @@ useEffect(() => {
                     <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                   </Link>
                   
-                  <Link
+   {/* 💬 Messages link — Desktop and Mobile fixed */}
+<Link
   to="/messages"
   className={navLinkClass("/messages")}
   onClick={() => setIsMenuOpen(false)}
 >
-  <div className="relative flex items-center">
+  <div className="relative flex items-center justify-center">
     <MessageSquare className="w-5 h-5" />
     {unreadCount > 0 && (
       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
@@ -167,8 +168,11 @@ useEffect(() => {
       </span>
     )}
   </div>
-  <span className="ml-2">Messages</span>
+
+  {/* Hide text on small screens */}
+  <span className="ml-2 hidden md:inline">Messages</span>
 </Link>
+
 
                   <button
                     onClick={handleLogout}
@@ -289,6 +293,26 @@ useEffect(() => {
                     Membership
                   </Link>
                   
+                    {/* 💬 Messages link — Desktop and Mobile fixed */}
+<Link
+  to="/messages"
+  className={navLinkClass("/messages")}
+  onClick={() => setIsMenuOpen(false)}
+>
+  <div className="relative flex items-center justify-center">
+    <MessageSquare className="w-5 h-5" />
+    {unreadCount > 0 && (
+      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
+        {unreadCount}
+      </span>
+    )}
+  </div>
+
+  {/* Hide text on small screens */}
+  <span className="ml-2 hidden md:inline">Messages</span>
+</Link>
+
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-3 rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 font-medium shadow-lg mt-2"
