@@ -62,7 +62,7 @@ useEffect(() => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 via-rose-600 to-violet-700">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
