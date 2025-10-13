@@ -262,33 +262,41 @@ export default function CallPage() {
   }, [type, isInitiator, socket, remoteUserId, endCall, getCurrentUserId]);
 
   // Set up socket event listeners
-  useEffect(() => {
-    if (socket) {
-      socket.on('offer', handleOffer);
-      socket.on('answer', handleAnswer);
-      socket.on('ice-candidate', handleIceCandidate);
-      socket.on('call-rejected', handleCallRejected);
-      socket.on('call-accepted', handleCallAccepted);
-      socket.on('incoming-call', (data) => {
-        setIncomingCall(data);
-        setCallStatus('ringing');
-      });
-      socket.on('call-failed', (data) => {
-        setCallStatus('failed');
-        console.error('Call failed:', data.reason);
-      });
+useEffect(() => {
+  if (!socket || typeof socket.on !== 'function') {
+    console.warn('⚠️ Socket not ready or invalid in CallPage');
+    return;
+  }
 
-      return () => {
-        socket.off('offer', handleOffer);
-        socket.off('answer', handleAnswer);
-        socket.off('ice-candidate', handleIceCandidate);
-        socket.off('call-rejected', handleCallRejected);
-        socket.off('call-accepted', handleCallAccepted);
-        socket.off('incoming-call');
-        socket.off('call-failed');
-      };
-    }
-  }, [socket, handleOffer, handleAnswer, handleIceCandidate, handleCallRejected, handleCallAccepted]);
+  console.log('🎯 Socket event listeners attached for CallPage');
+
+  socket.on('offer', handleOffer);
+  socket.on('answer', handleAnswer);
+  socket.on('ice-candidate', handleIceCandidate);
+  socket.on('call-rejected', handleCallRejected);
+  socket.on('call-accepted', handleCallAccepted);
+  socket.on('incoming-call', (data) => {
+    console.log('📞 Incoming call data:', data);
+    setIncomingCall(data);
+    setCallStatus('ringing');
+  });
+  socket.on('call-failed', (data) => {
+    console.error('❌ Call failed:', data.reason);
+    setCallStatus('failed');
+  });
+
+  return () => {
+    console.log('🧹 Cleaning up CallPage socket listeners');
+    socket.off('offer');
+    socket.off('answer');
+    socket.off('ice-candidate');
+    socket.off('call-rejected');
+    socket.off('call-accepted');
+    socket.off('incoming-call');
+    socket.off('call-failed');
+  };
+}, [socket, handleOffer, handleAnswer, handleIceCandidate, handleCallRejected, handleCallAccepted]);
+
 
   // Initialize call and set remote user ID
   useEffect(() => {
