@@ -4,6 +4,7 @@ import API from "../api";
 
 export default function MessagesListPage() {
   const [conversations, setConversations] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -14,9 +15,10 @@ export default function MessagesListPage() {
   async function fetchConversations() {
     try {
       const res = await API.get("/api/conversations");
-      setConversations(res.data);
+      setConversations(res.data.conversations || []);
+      setCurrentUserId(res.data.current_user_id);
     } catch (err) {
-      console.error("Failed to load conversations", err);
+      console.error("❌ Failed to load conversations:", err);
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,7 @@ export default function MessagesListPage() {
 
       <div className="grid gap-4">
         {conversations.map((conv) => {
-          const other = conv.participants?.find((p) => p.id !== conv.current_user_id);
+          const other = conv.participants?.find((p) => p.id !== currentUserId);
           const lastMessage = conv.latest_message || conv.latestMessage;
 
           return (
@@ -57,11 +59,11 @@ export default function MessagesListPage() {
                       ? `${API.defaults.baseURL.replace("/api", "")}/storage/${other.profile.profile_photo}`
                       : "https://via.placeholder.com/48"
                   }
-                  alt={other?.name}
+                  alt={other?.name || "User"}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-semibold text-gray-900">{other?.name}</p>
+                  <p className="font-semibold text-gray-900">{other?.name || "Unknown User"}</p>
                   <p className="text-sm text-gray-600 truncate w-56">
                     {lastMessage?.body || "📎 Attachment"}
                   </p>
