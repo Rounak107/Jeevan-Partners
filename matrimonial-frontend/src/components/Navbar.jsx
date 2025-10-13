@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isLoggedIn, logout } from "../auth";
+import { Bell, MessageSquare } from "lucide-react";
+import API from "../api";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +38,26 @@ export default function Navbar() {
 
 useEffect(() => {
   console.log('Image path:', '/logo__Couple_Maraige-removebg-preview.png');
+}, []);
+
+
+const [unreadCount, setUnreadCount] = useState(0);
+
+useEffect(() => {
+  async function fetchUnread() {
+    try {
+      const res = await API.get("/api/unread-messages-count");
+      setUnreadCount(res.data.count || 0);
+    } catch {
+      setUnreadCount(0);
+    }
+  }
+
+  if (isLoggedIn()) {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000); // refresh every 15s
+    return () => clearInterval(interval);
+  }
 }, []);
 
   return (
@@ -131,6 +153,22 @@ useEffect(() => {
                     </span>
                     <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                   </Link>
+                  
+                  <Link
+  to="/messages"
+  className={navLinkClass("/messages")}
+  onClick={() => setIsMenuOpen(false)}
+>
+  <div className="relative flex items-center">
+    <MessageSquare className="w-5 h-5" />
+    {unreadCount > 0 && (
+      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
+        {unreadCount}
+      </span>
+    )}
+  </div>
+  <span className="ml-2">Messages</span>
+</Link>
 
                   <button
                     onClick={handleLogout}
