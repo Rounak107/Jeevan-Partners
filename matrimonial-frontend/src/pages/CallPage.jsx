@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { useSocket } from '../hooks/useSocket';
+import { useSignalingSocket } from '../hooks/useSignalingSocket';
+
 
 export default function CallPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { socket, isConnected } = useSocket();
+ const { socket, isConnected, registerUser } = useSignalingSocket();
+
 
   const type = searchParams.get('type') || 'video';
   const isInitiator = searchParams.get('initiator') === 'true';
@@ -310,6 +312,14 @@ useEffect(() => {
       initializeCall();
     }
   }, [getRemoteUserId, isInitiator, socket, isConnected, initializeCall]);
+
+useEffect(() => {
+  const userId = localStorage.getItem("userId");
+  if (userId && registerUser) {
+    registerUser(userId);
+  }
+}, [registerUser]);
+
 
   // Cleanup on unmount
   useEffect(() => {
