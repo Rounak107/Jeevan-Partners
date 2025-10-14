@@ -13,6 +13,8 @@ import ProfilePage from "./pages/ProfilePage";
 import LikesPage from "./pages/LikesPage";
 import CallPage from './pages/CallPage';
 import MembershipPricing from './components/MembershipPricing';
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
             <Route path="/messages/:id" element={<MessagesPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/membership" element={<MembershipPricing />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/call/:id" element={<CallPage />} />
             <Route path="/likes" element={<LikesPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
