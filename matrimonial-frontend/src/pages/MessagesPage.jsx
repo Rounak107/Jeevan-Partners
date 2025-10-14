@@ -107,6 +107,9 @@ useEffect(() => {
     );
   });
 
+console.log("🧩 Messages count:", messages.length);
+
+
   channel.subscribed(() =>
     console.log("✅ Subscribed to conversation." + id)
   );
@@ -275,10 +278,14 @@ const sendMessage = async () => {
 
     const created = res.data;
     if (created) {
-      // Normalize the message structure before adding to state
-      const normalizedMessage = normalizeMessageStructure(created);
-      setMessages((prev) => [...prev, normalizedMessage]);
-    }
+  const normalizedMessage = normalizeMessageStructure(created);
+
+  setMessages((prev) => {
+    const exists = prev.some((m) => m.id === normalizedMessage.id);
+    return exists ? prev : [...prev, normalizedMessage];
+  });
+}
+
 
     setNewMessage("");
     setSelectedFile(null);
