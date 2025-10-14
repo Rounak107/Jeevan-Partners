@@ -22,22 +22,23 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await API.post("/api/reset-password", {
-        token,
-        email,
-        password,
-        password_confirmation: passwordConfirmation,
-      });
+        // Remove /api prefix since baseURL already includes it
+        const res = await API.post("/reset-password", {
+            token,
+            email,
+            password,
+            password_confirmation: passwordConfirmation,
+        });
 
-      setMessage(res.data.message || "Password reset successfully.");
-      setTimeout(() => navigate("/login"), 2000);
+        setMessage(res.data.message || "Password reset successfully.");
+        setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      console.error(err);
-      setError(err?.response?.data?.message || "Failed to reset password.");
+        console.error(err);
+        setError(err?.response?.data?.message || "Failed to reset password.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  }
+}
 
   return (
     <div className="max-w-md mx-auto bg-gray-800 p-6 rounded-md shadow-md text-white">
