@@ -9,21 +9,25 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setMessage("");
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setMessage("");
+  setError("");
+  setLoading(true);
 
-    try {
-      const res = await API.post("/api/forgot-password", { email });
-      setMessage(res.data.message || "Password reset link has been sent to your email.");
-    } catch (err) {
-      console.error(err);
-      setError(err?.response?.data?.message || "Failed to send reset link.");
-    } finally {
-      setLoading(false);
-    }
+  try {
+    // ✅ Important: ensure CSRF token is set before posting
+    await API.get("/sanctum/csrf-cookie");
+
+    const res = await API.post("/api/forgot-password", { email });
+    setMessage(res.data.message || "Password reset link has been sent to your email.");
+  } catch (err) {
+    console.error(err);
+    setError(err?.response?.data?.message || "Failed to send reset link.");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   return (
     <div className="max-w-md mx-auto bg-gray-800 p-6 rounded-md shadow-md text-white">

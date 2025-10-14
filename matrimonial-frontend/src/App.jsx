@@ -15,8 +15,15 @@ import CallPage from './pages/CallPage';
 import MembershipPricing from './components/MembershipPricing';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import API from "./api";
+import { useEffect } from "react";
 
 export default function App() {
+  useEffect(() => {
+    API.get("/sanctum/csrf-cookie").then(() => {
+      console.log("✅ Global CSRF cookie initialized");
+    });
+  }, []);
   return (
     <Router>
       <div className="min-h-screen bg-gray-900 flex flex-col">
