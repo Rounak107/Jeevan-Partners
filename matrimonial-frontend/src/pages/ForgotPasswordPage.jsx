@@ -18,7 +18,8 @@ export default function ForgotPasswordPage() {
     // ✅ Important: ensure CSRF token is set before posting
     await API.get("/sanctum/csrf-cookie");
 
-    const res = await API.post("/api/forgot-password", { email });
+    // Remove /api prefix since baseURL already includes it
+    const res = await API.post("/forgot-password", { email });
     setMessage(res.data.message || "Password reset link has been sent to your email.");
   } catch (err) {
     console.error(err);
@@ -27,7 +28,6 @@ export default function ForgotPasswordPage() {
     setLoading(false);
   }
 }
-
 
   return (
     <div className="max-w-md mx-auto bg-gray-800 p-6 rounded-md shadow-md text-white">
