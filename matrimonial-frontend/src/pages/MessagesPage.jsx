@@ -475,7 +475,7 @@ const rejectCall = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <button
             onClick={() => startCall("audio")}
             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md disabled:opacity-50"
@@ -492,7 +492,7 @@ const rejectCall = () => {
           >
             🎥
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Messages list */}
@@ -729,7 +729,7 @@ const rejectCall = () => {
       )}
 
       {/* Call modal */}
-      {callModalOpen && incomingCall && (
+      {/* {callModalOpen && incomingCall && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full">
             <h3 className="text-lg font-semibold mb-2">Incoming Call</h3>
@@ -752,7 +752,7 @@ const rejectCall = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
