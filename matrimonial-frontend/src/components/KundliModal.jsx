@@ -223,9 +223,6 @@ const KundliModal = ({ isOpen, onClose, userKundli, targetKundli, matchingData }
             >
               Close Report
             </button>
-            <button className="flex-1 bg-rose-600 text-white py-3 rounded-lg hover:bg-rose-700 transition-colors font-medium">
-              📄 Save This Report
-            </button>
           </div>
         </div>
       </div>
