@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
-import { generateCompatibilitySummary } from "../utils/aiCompatibility";
+//import { generateCompatibilitySummary } from "../utils/aiCompatibility";
 import { AstroAPI } from "../utils/astroAPI";
 import KundliModal from "../components/KundliModal";
+import { toggleCompatibility } from "../utils/aiCompatibility";
 
 const BASE_URL =
   import.meta.env.VITE_API_URL
@@ -71,19 +72,22 @@ export default function LikesPage() {
     }
   };
 
-  const analyzeCompatibility = (profile, user) => {
-    if (!currentUser) return alert("Please complete your own profile first!");
-    
-    // Combine profile and user data for compatibility analysis
-    const targetUserData = {
-      ...profile,
-      name: user?.name || "Unknown",
-      dob: profile?.dob || user?.dob
-    };
-    
-    const summary = generateCompatibilitySummary(currentUser, targetUserData);
-    setAiResponses((prev) => ({ ...prev, [profile.id]: summary }));
+ const analyzeCompatibility = (profile, user) => {
+  if (!currentUser) {
+    alert("Please complete your own profile first!");
+    return;
+  }
+  
+  // Combine profile and user data
+  const targetUserData = {
+    ...profile,
+    name: user?.name || "Unknown",
+    dob: profile?.dob || user?.dob
   };
+  
+  // Use toggle function
+  toggleCompatibility(profile.id, aiResponses, setAiResponses, currentUser, targetUserData);
+};
 
   // Add this helper function
   const formatDate = (dateString) => {
@@ -223,10 +227,34 @@ const generateDetailedKundli = async (profile) => {
                 </div>
 
                 {aiResponses[profile.id] && (
-                  <div className="mt-4 bg-gray-100 p-3 rounded-lg text-gray-800 whitespace-pre-line border border-gray-300 text-sm">
-                    {aiResponses[profile.id]}
-                  </div>
-                )}
+  <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
+    <div className="flex justify-between items-start mb-2">
+      <h4 className="font-semibold text-purple-700">🤖 Quick Compatibility</h4>
+      <button 
+        onClick={() => analyzeCompatibility(profile, user)}
+        className="text-gray-500 hover:text-gray-700 text-lg"
+      >
+        ×
+      </button>
+    </div>
+    <div className="whitespace-pre-line text-sm leading-relaxed">
+      {typeof aiResponses[profile.id] === 'string' 
+        ? aiResponses[profile.id] 
+        : aiResponses[profile.id].text
+      }
+    </div>
+    {aiResponses[profile.id] && aiResponses[profile.id].score > 0 && (
+      <div className="mt-3 pt-3 border-t border-blue-200">
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-gray-600">Zodiac Match:</span>
+          <span className="font-semibold text-purple-600">
+            {aiResponses[profile.id].zodiac1} + {aiResponses[profile.id].zodiac2}
+          </span>
+        </div>
+      </div>
+    )}
+  </div>
+)}
               </div>
             );
           })}
