@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [revealPhones, setRevealPhones] = useState({});
 
   // form states
   const [form, setForm] = useState({
@@ -149,16 +150,51 @@ export default function ProfilePage() {
   };
 
   // Helper functions for phone display
+  const maskPhoneNumber = (phone) => {
+    if (!phone) return "Not provided";
+    
+    // Keep country code visible, mask the rest
+    if (phone.startsWith('+91') && phone.length > 3) {
+      const visibleDigits = 4; // Show last 4 digits
+      const maskedPart = phone.slice(3, -visibleDigits).replace(/./g, '•');
+      const visiblePart = phone.slice(-visibleDigits);
+      return `+91${maskedPart}${visiblePart}`;
+    }
+    
+    // For other formats, mask first 6 digits
+    if (phone.length > 6) {
+      const maskedPart = phone.slice(0, 6).replace(/./g, '•');
+      const visiblePart = phone.slice(6);
+      return `${maskedPart}${visiblePart}`;
+    }
+    
+    return phone;
+  };
+
+  const toggleRevealPhone = (phone) => {
+    setRevealPhones(prev => ({
+      ...prev,
+      [phone]: !prev[phone]
+    }));
+  };
+
   const getPhoneDisplay = () => {
     if (!profile?.user) return "Not provided";
     
-    // For own profile or when phone is visible
-    if (id === "me" || profile.user.phone_visible) {
-      return profile.user.phone || "Not provided";
+    const phone = profile.user.phone;
+    if (!phone) return "Not provided";
+    
+    // For own profile, always show full number
+    if (id === "me") {
+      return phone;
     }
     
-    // For other users, show masked phone
-    return profile.user.masked_phone || "*******";
+    // For other users, show masked with reveal option
+    if (revealPhones[phone]) {
+      return phone;
+    }
+    
+    return maskPhoneNumber(phone);
   };
 
   const getPhoneStatus = () => {
@@ -180,6 +216,23 @@ export default function ProfilePage() {
       case 'Pending verification': return 'text-yellow-400';
       default: return 'text-gray-400';
     }
+  };
+
+  const handlePhoneInput = (e) => {
+    let value = e.target.value;
+    
+    // Auto-format with +91 if not already present
+    if (!value.startsWith('+91') && value.length > 0) {
+      // Remove any existing +91 and non-digit characters
+      value = value.replace(/^\+91/, '').replace(/\D/g, '');
+      
+      // Add +91 prefix
+      if (value.length > 0) {
+        value = '+91' + value;
+      }
+    }
+    
+    setForm({ ...form, phone: value });
   };
 
   if (loading) {
@@ -250,8 +303,28 @@ export default function ProfilePage() {
                 <div className="mt-4 p-3 bg-gray-700 rounded-lg">
                   <div className="text-left">
                     <div className="text-gray-400 text-sm">Phone Number</div>
-                    <div className="text-white font-medium">
-                      {getPhoneDisplay()}
+                    <div className="flex items-center justify-between">
+                      <div className="text-white font-medium font-mono">
+                        {getPhoneDisplay()}
+                      </div>
+                      {id !== "me" && profile?.user?.phone && (
+                        <button
+                          onClick={() => toggleRevealPhone(profile.user.phone)}
+                          className="ml-2 p-1 text-gray-400 hover:text-white transition-colors"
+                          title={revealPhones[profile.user.phone] ? "Hide number" : "Reveal number"}
+                        >
+                          {revealPhones[profile.user.phone] ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m9.02 9.02l3.83 3.83" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
                     </div>
                     <div className={`text-xs ${getPhoneStatusColor()}`}>
                       {getPhoneStatus()}
@@ -556,10 +629,13 @@ export default function ProfilePage() {
                 type="tel"
                 name="phone"
                 value={form.phone}
-                onChange={handleChange}
+                onChange={handlePhoneInput}
                 className="w-full px-3 py-2 rounded bg-gray-700 text-white"
                 placeholder="+91XXXXXXXXXX"
               />
+              <p className="text-gray-400 text-xs mt-1">
+                Format: +91 followed by 10 digits (e.g., +919876543210)
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
