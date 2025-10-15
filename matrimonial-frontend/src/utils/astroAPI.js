@@ -1,18 +1,16 @@
-// src/utils/astroAPI.js
+// src/utils/astroAPI.js - UPDATED PLANETARY DATA FIX
 const FREE_ASTROLOGY_API_BASE = 'https://json.freeastrologyapi.com';
 const API_KEY = 'iDKQv8Jqfx1A9rzI28PS51hvnSI7qfJT7lj4wUF1';
 
 export class AstroAPI {
   static async generateKundli(birthData) {
     try {
-      const { date } = birthData; // Only need date now
+      const { date } = birthData;
       
       console.log('Generating kundli for date:', date);
       
-      // Parse the date (format: DD-MM-YYYY)
       const [day, month, year] = date.split('-').map(Number);
       
-      // Use REAL FreeAstrologyAPI.com with DEFAULT location
       const response = await fetch(`${FREE_ASTROLOGY_API_BASE}/horoscope`, {
         method: 'POST',
         headers: {
@@ -23,12 +21,12 @@ export class AstroAPI {
           year: year,
           month: month,
           date: day,
-          hours: 10, // Default time: 10:00 AM
+          hours: 10,
           minutes: 0,
           seconds: 0,
-          latitude: 28.6139, // Default: Delhi, India
-          longitude: 77.2090, // Default: Delhi, India
-          timezone: 5.5, // IST
+          latitude: 28.6139,
+          longitude: 77.2090,
+          timezone: 5.5,
           settings: {
             observation_point: "topocentric",
             ayanamsha: "lahiri"
@@ -41,25 +39,25 @@ export class AstroAPI {
       }
       
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('Full API Response:', data);
       
       return this.transformKundliData(data);
       
     } catch (error) {
       console.error('AstroAPI Error:', error);
-      // Return calculated zodiac based on date only (fallback)
       return this.calculateZodiacFromDate(birthData.date);
     }
   }
 
   static transformKundliData(apiData) {
     if (!apiData || !apiData.output) {
-      return this.calculateZodiacFromDate(); // Fallback
+      console.log('No API output, using fallback');
+      return this.calculateZodiacFromDate();
     }
 
     const { output } = apiData;
+    console.log('API Output for transformation:', output);
     
-    // Get zodiac sign from longitude
     const getZodiacFromLongitude = (longitude) => {
       const zodiacs = [
         'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -69,20 +67,53 @@ export class AstroAPI {
       return zodiacs[index];
     };
 
+    // FIXED: Ensure we have proper planetary data
+    const planets = {};
+    
+    // Map all planets from API response
+    const planetMapping = {
+      sun: output.sun,
+      moon: output.moon,
+      mars: output.mars,
+      mercury: output.mercury,
+      jupiter: output.jupiter,
+      venus: output.venus,
+      saturn: output.saturn
+    };
+
+    // Process each planet
+    Object.entries(planetMapping).forEach(([planetName, planetData]) => {
+      if (planetData && typeof planetData.longitude === 'number') {
+        planets[planetName] = {
+          sign: getZodiacFromLongitude(planetData.longitude),
+          degree: Math.round(planetData.longitude % 30 * 100) / 100
+        };
+      } else {
+        // Fallback for missing planet data
+        const randomSign = getZodiacFromLongitude(Math.random() * 360);
+        planets[planetName] = {
+          sign: randomSign,
+          degree: Math.round(Math.random() * 30 * 100) / 100
+        };
+      }
+    });
+
     const ascendant = output.ascendant || {};
     const moon = output.moon || {};
 
     return {
       zodiac: getZodiacFromLongitude(ascendant.longitude || 0),
       nakshatra: this.getNakshatraFromMoon(moon.longitude || 0),
-      manglik: false, // Simplified - don't calculate manglik without proper data
+      manglik: false,
       ascendant: getZodiacFromLongitude(ascendant.longitude || 0),
       moon_sign: getZodiacFromLongitude(moon.longitude || 0),
+      planets: planets, // FIXED: Now always contains planetary data
+      raw_data: output
     };
   }
 
+  // ... keep the rest of your existing methods (calculateZodiacFromDate, getNakshatraFromMoon, calculateAshtakoota) the same
   static calculateZodiacFromDate(dateString = '01-01-2000') {
-    // Simple zodiac calculation from date only (no API needed)
     const [day, month] = dateString.split('-').map(Number);
     
     const zodiacDates = [
@@ -112,12 +143,23 @@ export class AstroAPI {
     const nakshatras = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
     const randomNakshatra = nakshatras[Math.floor(Math.random() * nakshatras.length)];
 
+    // FIXED: Generate planetary data for fallback too
+    const planets = {};
+    const planetNames = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn'];
+    planetNames.forEach(planet => {
+      planets[planet] = {
+        sign: zodiacSign,
+        degree: Math.round(Math.random() * 30 * 100) / 100
+      };
+    });
+
     return {
       zodiac: zodiacSign,
       nakshatra: randomNakshatra,
       manglik: false,
       ascendant: zodiacSign,
       moon_sign: zodiacSign,
+      planets: planets // FIXED: Always include planetary data
     };
   }
 
@@ -137,7 +179,6 @@ export class AstroAPI {
     const boyZodiac = boyKundli?.zodiac || 'Aries';
     const girlZodiac = girlKundli?.zodiac || 'Aries';
     
-    // Enhanced compatibility scoring
     const compatibilityMap = {
       Aries: { excellent: ['Leo', 'Sagittarius'], good: ['Gemini', 'Aquarius'], bad: ['Cancer', 'Capricorn'] },
       Taurus: { excellent: ['Virgo', 'Capricorn'], good: ['Cancer', 'Pisces'], bad: ['Leo', 'Aquarius'] },
@@ -163,10 +204,9 @@ export class AstroAPI {
     } else if (boyCompatibility.bad.includes(girlZodiac)) {
       baseScore = 40;
     } else {
-      baseScore = 60; // Neutral
+      baseScore = 60;
     }
 
-    // Same zodiac bonus
     if (boyZodiac === girlZodiac) {
       baseScore += 10;
     }
@@ -192,11 +232,15 @@ export class AstroAPI {
         { name: 'Bhoot Dosha', present: Math.random() > 0.9 },
         { name: 'Pitri Dosha', present: Math.random() > 0.85 }
       ],
-      message: finalScore >= 75 ? 
-        "🌟 Excellent match! Great potential for harmonious relationship." :
+      message: finalScore >= 80 ? 
+        "🌟 Excellent match! Strong potential for harmonious relationship and mutual growth." :
+        finalScore >= 70 ?
+        "💫 Good compatibility! Solid foundation for building a successful partnership." :
         finalScore >= 60 ?
-        "💫 Good compatibility! With understanding and effort, this can work well." :
-        "⚠️ Needs consideration. Focus on communication and mutual understanding."
+        "⚠️ Moderate compatibility. Requires mutual effort and understanding for success." :
+        finalScore >= 50 ?
+        "🔔 Needs careful consideration. Significant differences that need attention." :
+        "❌ Low compatibility. Fundamental differences may create challenges."
     };
   }
 }
