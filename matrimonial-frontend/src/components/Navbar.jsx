@@ -203,7 +203,7 @@ export default function Navbar() {
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <Heart className="w-5 h-5 fill-white animate-pulse" />
-                      Register Free
+                      Register
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                   </Link>

@@ -10,6 +10,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [phoneEditMode, setPhoneEditMode] = useState(false);
+  const [verificationMode, setVerificationMode] = useState(false);
 
   // form states
   const [form, setForm] = useState({
@@ -32,15 +34,20 @@ export default function ProfilePage() {
     mangal_dosha_details: "",
     about: "",
   });
+
+  // Phone states
+  const [phoneForm, setPhoneForm] = useState({
+    phone: "",
+    verificationCode: ""
+  });
+
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [photos, setPhotos] = useState([]);
-
-  // NEW: state for previewing full image
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
-const BASE_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace('/api', '')
-  : 'https://couplemarriage.com';
+  const BASE_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace('/api', '')
+    : 'https://couplemarriage.com';
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -76,6 +83,11 @@ const BASE_URL = import.meta.env.VITE_API_URL
               mangal_dosha_details: data.mangal_dosha_details || "",
               about: data.about || "",
             });
+            // Initialize phone form with current phone if available
+            setPhoneForm({
+              phone: data.user?.phone || "",
+              verificationCode: ""
+            });
           } else {
             setError("You don't have a profile yet");
           }
@@ -100,6 +112,10 @@ const BASE_URL = import.meta.env.VITE_API_URL
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handlePhoneChange = (e) => {
+    setPhoneForm({ ...phoneForm, [e.target.name]: e.target.value });
   };
 
   const handleSave = async (e) => {
@@ -147,6 +163,84 @@ const BASE_URL = import.meta.env.VITE_API_URL
     }
   };
 
+  const handlePhoneUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await API.post("/profile/phone", {
+        phone: phoneForm.phone
+      });
+
+      alert(res.data.message);
+      setVerificationMode(true);
+      setPhoneEditMode(false);
+    } catch (err) {
+      console.error("Error updating phone:", err);
+      alert(err.response?.data?.message || "Failed to update phone number");
+    }
+  };
+
+  const handlePhoneVerify = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await API.post("/profile/phone/verify", {
+        code: phoneForm.verificationCode
+      });
+
+      alert(res.data.message);
+      setVerificationMode(false);
+      // Refresh profile to get updated phone status
+      const { data } = await API.get("/profile");
+      setProfile(data);
+    } catch (err) {
+      console.error("Error verifying phone:", err);
+      alert(err.response?.data?.message || "Invalid verification code");
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      const res = await API.post("/profile/phone/resend-code");
+      alert(res.data.message);
+    } catch (err) {
+      console.error("Error resending code:", err);
+      alert("Failed to resend verification code");
+    }
+  };
+
+  // Helper functions for phone display
+  const getPhoneDisplay = () => {
+    if (!profile?.user) return "Not provided";
+    
+    // For own profile or when phone is visible
+    if (id === "me" || profile.user.phone_visible) {
+      return profile.user.phone || "Not provided";
+    }
+    
+    // For other users, show masked phone
+    return profile.user.masked_phone || "*******";
+  };
+
+  const getPhoneStatus = () => {
+    if (!profile?.user?.phone) return "Not added";
+    
+    if (profile.user.phone_verified) {
+      return "Verified";
+    } else if (profile.user.phone) {
+      return "Pending verification";
+    }
+    
+    return "Not verified";
+  };
+
+  const getPhoneStatusColor = () => {
+    const status = getPhoneStatus();
+    switch (status) {
+      case 'Verified': return 'text-green-400';
+      case 'Pending verification': return 'text-yellow-400';
+      default: return 'text-gray-400';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -173,9 +267,9 @@ const BASE_URL = import.meta.env.VITE_API_URL
     );
   }
 
- const img = profile?.profile_photo
-  ? `${BASE_URL}/storage/${profile.profile_photo}`
-  : null;
+  const img = profile?.profile_photo
+    ? `${BASE_URL}/storage/${profile.profile_photo}`
+    : null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -210,6 +304,32 @@ const BASE_URL = import.meta.env.VITE_API_URL
                 <p className="text-gray-400">
                   {profile?.age} years • {profile?.city}
                 </p>
+                
+                {/* Phone Number Display */}
+                <div className="mt-4 p-3 bg-gray-700 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div className="text-left">
+                      <div className="text-gray-400 text-sm">Phone Number</div>
+                      <div className="text-white font-medium">
+                        {getPhoneDisplay()}
+                      </div>
+                      <div className={`text-xs ${getPhoneStatusColor()}`}>
+                        {getPhoneStatus()}
+                        {!profile?.user?.phone_verified && profile?.user?.phone && (
+                          <span className="ml-2">🔒</span>
+                        )}
+                      </div>
+                    </div>
+                    {id === "me" && (
+                      <button
+                        onClick={() => setPhoneEditMode(true)}
+                        className="text-indigo-400 hover:text-indigo-300 text-sm"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Astrological Details */}
@@ -322,12 +442,12 @@ const BASE_URL = import.meta.env.VITE_API_URL
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {profile.photos.map((photo, index) => (
                       <img
-  key={index}
-  src={`${BASE_URL}/storage/${photo}`}
-  alt={`Photo ${index + 1}`}
-  className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80"
-  onClick={() => setSelectedPhoto(`${BASE_URL}/storage/${photo}`)}
-/>
+                        key={index}
+                        src={`${BASE_URL}/storage/${photo}`}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80"
+                        onClick={() => setSelectedPhoto(`${BASE_URL}/storage/${photo}`)}
+                      />
                     ))}
                   </div>
 
@@ -639,6 +759,97 @@ const BASE_URL = import.meta.env.VITE_API_URL
               </button>
             </div>
           </form>
+        )}
+
+        {/* PHONE EDIT MODAL */}
+        {(phoneEditMode || verificationMode) && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg w-96">
+              <h3 className="text-xl font-semibold text-white mb-4">
+                {verificationMode ? 'Verify Phone Number' : 'Update Phone Number'}
+              </h3>
+
+              {!verificationMode ? (
+                <form onSubmit={handlePhoneUpdate}>
+                  <div className="mb-4">
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={phoneForm.phone}
+                      onChange={handlePhoneChange}
+                      className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                      placeholder="+91XXXXXXXXXX"
+                      required
+                    />
+                    <p className="text-gray-400 text-xs mt-1">
+                      We'll send a verification code to this number
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 text-white"
+                    >
+                      Send Code
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPhoneEditMode(false)}
+                      className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700 text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handlePhoneVerify}>
+                  <div className="mb-4">
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      name="verificationCode"
+                      value={phoneForm.verificationCode}
+                      onChange={handlePhoneChange}
+                      className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                      placeholder="Enter 6-digit code"
+                      maxLength="6"
+                      required
+                    />
+                    <p className="text-gray-400 text-xs mt-1">
+                      Enter the 6-digit code sent to your phone
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      className="text-indigo-400 text-xs mt-2 hover:text-indigo-300"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 text-white"
+                    >
+                      Verify
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVerificationMode(false)}
+                      className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700 text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
