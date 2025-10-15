@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
 import { generateCompatibilitySummary } from "../utils/aiCompatibility";
+import { AstroAPI } from "../utils/astroAPI";
+import KundliModal from "../components/KundliModal";
 
 const BASE_URL =
   import.meta.env.VITE_API_URL
@@ -20,6 +22,14 @@ export default function LikesPage() {
   const [aiResponses, setAiResponses] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+
+  const [kundliModal, setKundliModal] = useState({
+    isOpen: false,
+    userKundli: null,
+    targetKundli: null,
+    matchingData: null,
+    loading: false
+  });
 
   useEffect(() => {
     fetchUser();
@@ -74,6 +84,58 @@ export default function LikesPage() {
     const summary = generateCompatibilitySummary(currentUser, targetUserData);
     setAiResponses((prev) => ({ ...prev, [profile.id]: summary }));
   };
+
+  // Add this helper function
+  const formatDate = (dateString) => {
+    if (!dateString) return '01-01-2000'; // Default date
+    const date = new Date(dateString);
+    // Format as DD-MM-YYYY for the API
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // In your generateDetailedKundli function - SIMPLIFIED:
+const generateDetailedKundli = async (profile) => {
+  if (!currentUser?.dob) {
+    alert('Please complete your profile with birth date first!');
+    return;
+  }
+
+  setKundliModal(prev => ({ ...prev, loading: true }));
+
+  try {
+    // SIMPLIFIED: Only need date of birth!
+    const userBirthData = {
+      date: formatDate(currentUser.dob)
+    };
+
+    const targetBirthData = {
+      date: formatDate(profile.dob)
+    };
+
+    // Generate both kundlis using SIMPLIFIED API
+    const userKundli = await AstroAPI.generateKundli(userBirthData);
+    const targetKundli = await AstroAPI.generateKundli(targetBirthData);
+
+    // Calculate matching
+    const matchingData = AstroAPI.calculateAshtakoota(userKundli, targetKundli);
+
+    setKundliModal({
+      isOpen: true,
+      userKundli,
+      targetKundli,
+      matchingData,
+      loading: false
+    });
+
+  } catch (error) {
+    console.error('Kundli generation failed:', error);
+    alert('Failed to generate kundli analysis. Please try again.');
+    setKundliModal(prev => ({ ...prev, loading: false }));
+  }
+};
 
   if (loading) {
     return (
@@ -138,10 +200,18 @@ export default function LikesPage() {
                   </button>
                   
                   <button
+                    onClick={() => generateDetailedKundli(profile)} 
+                    disabled={kundliModal.loading}
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+                  >
+                    {kundliModal.loading ? '🔄 Analyzing...' : '🤖 AI Kundli Match'}
+                  </button>
+
+                  <button
                     onClick={() => analyzeCompatibility(profile, user)}
                     className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
                   >
-                    🔮 Check Compatibility
+                    🔮 Quick Compatibility
                   </button>
                   
                   <button
@@ -162,6 +232,15 @@ export default function LikesPage() {
           })}
         </div>
       )}
+
+      {/* Kundli Modal */}
+      <KundliModal
+        isOpen={kundliModal.isOpen}
+        onClose={() => setKundliModal(prev => ({ ...prev, isOpen: false }))}
+        userKundli={kundliModal.userKundli}
+        targetKundli={kundliModal.targetKundli}
+        matchingData={kundliModal.matchingData}
+      />
     </div>
   );
 }
