@@ -60,8 +60,72 @@ export default function HomePage() {
     window.open('https://your-actual-course-website.com', '_blank');
   };
 
+  <style>{`
+  @keyframes float-heart {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.5; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+  .animate-float-heart {
+    animation: float-heart linear infinite;
+  }
+
+  @keyframes slideFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-fade-up {
+    animation: slideFadeUp 0.8s ease-out forwards;
+  }
+
+  @keyframes fadeDelay {
+    0%, 40% { opacity: 0; transform: translateY(15px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-delay {
+    animation: fadeDelay 1.2s ease-in-out forwards;
+  }
+
+  @keyframes scaleIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.7s ease-out both;
+  }
+
+  @keyframes wiggleSlight {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(1deg); }
+  }
+  .animate-wiggle-slight {
+    animation: wiggleSlight 0.4s ease-in-out;
+  }
+
+  html { scroll-behavior: smooth; }
+`}</style>
+
   return (
     <div className="min-h-screen bg-white">
+
+{/* Floating Background Hearts */}
+<div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  {[...Array(7)].map((_, i) => (
+    <div
+      key={i}
+      className="absolute animate-float-heart"
+      style={{
+        left: `${Math.random() * 100}%`,
+        animationDelay: `${i * 3}s`,
+        animationDuration: `${18 + Math.random() * 6}s`
+      }}
+    >
+      <Heart className="w-6 h-6 text-rose-200 opacity-30" fill="currentColor" />
+    </div>
+  ))}
+</div>
+
       {/* Android App Banner */}
       {showAppBanner && (
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
@@ -103,14 +167,14 @@ export default function HomePage() {
           
           {/* Main Headline */}
           <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight animate-slide-fade-up">
               <span className="block bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 Find Your Perfect
               </span>
               <span className="block text-gray-800">Life Partner</span>
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-delay">
               Where meaningful connections turn into beautiful relationships. 
               Start your journey to forever today with India's most trusted matrimonial platform.
             </p>
@@ -129,7 +193,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link 
                   to="/matches" 
-                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Search className="w-5 h-5" />
@@ -150,7 +214,7 @@ export default function HomePage() {
                 
                 <Link 
                   to="/membership" 
-                  className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Crown className="w-5 h-5" />
@@ -164,7 +228,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link 
                   to="/register" 
-                  className="group relative px-10 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="group relative px-10 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)]transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Sparkles className="w-5 h-5" />
@@ -211,7 +275,7 @@ export default function HomePage() {
             ].map((stat, index) => (
               <div 
                 key={index} 
-                className="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                className="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-shadow"
               >
                 <stat.icon className="w-8 h-8 mx-auto mb-3 text-purple-600" />
                 <div className="text-2xl font-bold text-gray-800 mb-1">{stat.number}</div>
@@ -262,7 +326,7 @@ export default function HomePage() {
           ].map((feature, index) => (
             <div 
               key={index} 
-              className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 p-8"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 p-8"
             >
               <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.gradient} mb-6`}>
                 <feature.icon className="w-6 h-6 text-white" />
@@ -352,7 +416,7 @@ export default function HomePage() {
                 date: "Engaged 2024"
               }
             ].map((testimonial, index) => (
-              <div key={index} className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+              <div key={index} className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 hover:animate-wiggle-slight">
                 <div className="flex justify-center gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
@@ -385,7 +449,7 @@ export default function HomePage() {
           {!loggedIn ? (
             <Link 
               to="/register" 
-              className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-10 py-4 rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-10 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105"
             >
               <Sparkles className="w-5 h-5" />
               <span>Get Started Free</span>
@@ -395,7 +459,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link 
                 to="/matches" 
-                className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300"
               >
                 <Search className="w-5 h-5" />
                 <span>Find Matches</span>
@@ -403,7 +467,7 @@ export default function HomePage() {
               
               <Link 
                 to="/membership" 
-                className="inline-flex items-center justify-center gap-2 bg-yellow-400 text-gray-900 px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 bg-yellow-400 text-gray-900 px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300"
               >
                 <Crown className="w-5 h-5" />
                 <span>Go Premium</span>
@@ -425,5 +489,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    
   );
 }
