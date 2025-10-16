@@ -29,11 +29,11 @@ export default function HomePage() {
   adContainer.innerHTML = "";
 
   // === 1️⃣ First Script: JS SYNC (NO ADBLOCK BYPASS) ===
-  const script1 = document.createElement("script");
-  script1.type = "text/javascript";
-  script1.src = "//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js";
-  script1.async = true;
-  adContainer.appendChild(script1);
+  // const script1 = document.createElement("script");
+  // script1.type = "text/javascript";
+  // script1.src = "//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js";
+  // script1.async = true;
+  // adContainer.appendChild(script1);
 
   // === 2️⃣ Second Script Set ===
   const script2 = document.createElement("script");
