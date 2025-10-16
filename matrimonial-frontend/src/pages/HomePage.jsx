@@ -18,7 +18,12 @@ import {
   Lock,
   TrendingUp,
   Award,
-  Clock
+  Clock,
+  Brain,
+  Zap,
+  BarChart3,
+  Target,
+  Cpu
 } from "lucide-react";
 
 export default function HomePage() {
@@ -60,75 +65,121 @@ export default function HomePage() {
     window.open('https://your-actual-course-website.com', '_blank');
   };
 
-  <style>{`
-  @keyframes float-heart {
-    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.5; }
-    90% { opacity: 0.5; }
-    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-  }
-  .animate-float-heart {
-    animation: float-heart linear infinite;
-  }
-
-  @keyframes slideFadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-slide-fade-up {
-    animation: slideFadeUp 0.8s ease-out forwards;
-  }
-
-  @keyframes fadeDelay {
-    0%, 40% { opacity: 0; transform: translateY(15px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-delay {
-    animation: fadeDelay 1.2s ease-in-out forwards;
-  }
-
-  @keyframes scaleIn {
-    0% { transform: scale(0.9); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .animate-scale-in {
-    animation: scaleIn 0.7s ease-out both;
-  }
-
-  @keyframes wiggleSlight {
-    0%, 100% { transform: rotate(0); }
-    50% { transform: rotate(1deg); }
-  }
-  .animate-wiggle-slight {
-    animation: wiggleSlight 0.4s ease-in-out;
-  }
-
-  html { scroll-behavior: smooth; }
-`}</style>
-
   return (
     <div className="min-h-screen bg-white">
+      <style>{`
+        @keyframes float-heart {
+          0% { 
+            transform: translateY(100vh) rotate(0deg) scale(0.5); 
+            opacity: 0; 
+          }
+          10% { 
+            opacity: 0.7; 
+          }
+          90% { 
+            opacity: 0.7; 
+          }
+          100% { 
+            transform: translateY(-100px) rotate(360deg) scale(1.2); 
+            opacity: 0; 
+          }
+        }
+        
+        .animate-float-heart {
+          animation: float-heart linear infinite;
+          pointer-events: none;
+        }
 
-{/* Floating Background Hearts */}
-<div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-  {[...Array(7)].map((_, i) => (
-    <div
-      key={i}
-      className="absolute animate-float-heart"
-      style={{
-        left: `${Math.random() * 100}%`,
-        animationDelay: `${i * 3}s`,
-        animationDuration: `${18 + Math.random() * 6}s`
-      }}
-    >
-      <Heart className="w-6 h-6 text-rose-200 opacity-30" fill="currentColor" />
-    </div>
-  ))}
-</div>
+        @keyframes pulse-glow {
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(219, 39, 119, 0.3);
+          }
+          50% { 
+            box-shadow: 0 0 40px rgba(219, 39, 119, 0.6), 
+                       0 0 60px rgba(192, 38, 211, 0.4);
+          }
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes slideFadeUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+        
+        .animate-slide-fade-up {
+          animation: slideFadeUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeDelay {
+          0%, 40% { 
+            opacity: 0; 
+            transform: translateY(15px); 
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+        
+        .animate-fade-delay {
+          animation: fadeDelay 1.2s ease-in-out forwards;
+        }
+
+        @keyframes wiggleSlight {
+          0%, 100% { 
+            transform: rotate(0); 
+          }
+          50% { 
+            transform: rotate(1deg); 
+          }
+        }
+        
+        .animate-wiggle-slight {
+          animation: wiggleSlight 0.4s ease-in-out;
+        }
+
+        html { 
+          scroll-behavior: smooth; 
+        }
+      `}</style>
+
+      {/* Floating Background Hearts - Enhanced Animation */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute animate-float-heart"
+            style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${i * 2}s`,
+              animationDuration: `${12 + Math.random() * 8}s`,
+              fontSize: `${8 + Math.random() * 12}px`
+            }}
+          >
+            <Heart 
+              className="text-rose-200 opacity-40" 
+              fill="currentColor" 
+              style={{
+                width: `${20 + Math.random() * 30}px`,
+                height: `${20 + Math.random() * 30}px`
+              }}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Android App Banner */}
       {showAppBanner && (
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center space-x-3">
@@ -149,12 +200,12 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Hero Section - Clean & Professional */}
+      {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-rose-50 to-purple-50">
         <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${showAppBanner ? 'pt-24' : 'pt-20'} pb-16`}>
           {/* Trust Badge */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-100">
+            <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-100 animate-slide-fade-up">
               <div className="flex -space-x-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white">A</div>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white">I</div>
@@ -193,7 +244,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link 
                   to="/matches" 
-                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105"
+                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105 animate-pulse-glow"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Search className="w-5 h-5" />
@@ -228,7 +279,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link 
                   to="/register" 
-                  className="group relative px-10 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)]transition-all duration-300 hover:scale-105"
+                  className="group relative px-10 py-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105 animate-pulse-glow"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Sparkles className="w-5 h-5" />
@@ -275,7 +326,7 @@ export default function HomePage() {
             ].map((stat, index) => (
               <div 
                 key={index} 
-                className="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-shadow"
+                className="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 hover:scale-105"
               >
                 <stat.icon className="w-8 h-8 mx-auto mb-3 text-purple-600" />
                 <div className="text-2xl font-bold text-gray-800 mb-1">{stat.number}</div>
@@ -285,8 +336,126 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* AI Kundli Integration Section */}
+      <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white px-6 py-3 rounded-full font-bold mb-6 shadow-lg">
+              <Brain className="w-6 h-6" />
+              <span>Revolutionary AI Kundli Matching</span>
+              <Zap className="w-6 h-6" />
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Ancient Wisdom Meets <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">Modern AI</span>
+            </h2>
+            
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Experience the world's first AI-powered Vedic astrology matching system that combines 
+              5000+ years of astrological wisdom with cutting-edge artificial intelligence
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+            {/* Left: AI Stats */}
+            <div className="space-y-8">
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-orange-100">
+                <h3 className="text-2xl font-bold mb-6 text-gray-900 flex items-center gap-3">
+                  <Cpu className="w-8 h-8 text-orange-600" />
+                  AI-Powered Analysis
+                </h3>
+                
+                <div className="space-y-4">
+                  {[
+                    { icon: BarChart3, text: "36-Point Guna Milan Analysis", value: "99.8% Accuracy" },
+                    { icon: Target, text: "Manglik Dosha Detection", value: "AI Verified" },
+                    { icon: Zap, text: "Planetary Position Insights", value: "Real-time" },
+                    { icon: Brain, text: "Compatibility Prediction", value: "Machine Learning" }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-orange-50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <item.icon className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <span className="font-semibold text-gray-800">{item.text}</span>
+                      </div>
+                      <span className="text-sm font-bold text-orange-600 bg-orange-100 px-3 py-1 rounded-full">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Vedic Astrology Benefits */}
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl p-8 text-white shadow-xl">
+                <h3 className="text-2xl font-bold mb-4">Why Vedic Astrology Matters</h3>
+                <p className="text-amber-100 leading-relaxed mb-6">
+                  Our AI system analyzes birth charts based on ancient Vedic principles to ensure 
+                  perfect compatibility for lifelong happiness and harmony.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">36+</div>
+                    <div className="text-amber-100 text-sm">Guna Points</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">12</div>
+                    <div className="text-amber-100 text-sm">Houses Analysis</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">9</div>
+                    <div className="text-amber-100 text-sm">Planets</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">27</div>
+                    <div className="text-amber-100 text-sm">Nakshatras</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-amber-100">
+                <h4 className="text-lg font-bold mb-4 text-gray-900">AI Analysis Benefits</h4>
+                <div className="space-y-3">
+                  {[
+                    "Instant compatibility scoring",
+                    "Dosha detection & remedies",
+                    "Planetary alignment insights",
+                    "Future prediction models",
+                    "Personalized matching algorithms"
+                  ].map((benefit, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-gray-700">{benefit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { number: "10K+", label: "Data Points Analyzed", icon: Cpu, color: "blue" },
+              { number: "99.9%", label: "AI Accuracy Rate", icon: TrendingUp, color: "green" },
+              { number: "0.5s", label: "Analysis Time", icon: Zap, color: "yellow" },
+              { number: "50K+", label: "Successful Matches", icon: Heart, color: "rose" }
+            ].map((stat, idx) => (
+              <div key={idx} className="text-center bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <stat.icon className={`w-10 h-10 mx-auto mb-3 text-${stat.color}-600`} />
+                <div className="text-2xl font-bold text-gray-800 mb-1">{stat.number}</div>
+                <div className="text-gray-600 text-sm">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       
-      {/* Features Section - Clean & Professional */}
+      {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
@@ -326,7 +495,7 @@ export default function HomePage() {
           ].map((feature, index) => (
             <div 
               key={index} 
-              className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 p-8"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all duration-300 p-8 hover:scale-105"
             >
               <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.gradient} mb-6`}>
                 <feature.icon className="w-6 h-6 text-white" />
@@ -489,6 +658,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-    
   );
 }
