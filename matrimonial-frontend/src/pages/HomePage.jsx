@@ -19,28 +19,47 @@ export default function HomePage() {
   const loggedIn = isLoggedIn();
   const [showAppBanner, setShowAppBanner] = React.useState(true);
 
-  // Load only Adzilla script
-  useEffect(() => {
-    const adContainer = document.getElementById("adzilla-container");
-    if (!adContainer) return;
+  // Load ad scripts using useEffect
+ useEffect(() => {
+  // Create a container where the ads will load
+  const adContainer = document.getElementById("ad-container");
+  if (!adContainer) return;
 
-    // Clear any existing content
-    adContainer.innerHTML = "";
+  // Clean up existing ads (if re-rendered)
+  adContainer.innerHTML = "";
 
-    // Only Adzilla script
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js";
-    script.async = true;
-    adContainer.appendChild(script);
+  // === 1️⃣ First Script: JS SYNC (NO ADBLOCK BYPASS) ===
+  const script1 = document.createElement("script");
+  script1.type = "text/javascript";
+  script1.src = "//pl27816842.effectivegatecpm.com/ae/43/d2/ae43d226a3be9560b9600b25ef141bcf.js";
+  script1.async = true;
+  adContainer.appendChild(script1);
 
-    // Cleanup
-    return () => {
-      if (adContainer) {
-        adContainer.innerHTML = "";
-      }
+  // === 2️⃣ Second Script Set ===
+  const script2 = document.createElement("script");
+  script2.type = "text/javascript";
+  script2.innerHTML = `
+    atOptions = {
+      'key' : 'd89152563405b3e145016685931bd36b',
+      'format' : 'iframe',
+      'height' : 90,
+      'width' : 728,
+      'params' : {}
     };
-  }, []);
+  `;
+  adContainer.appendChild(script2);
+
+  const script3 = document.createElement("script");
+  script3.type = "text/javascript";
+  script3.src = "//www.highperformanceformat.com/d89152563405b3e145016685931bd36b/invoke.js";
+  script3.async = true;
+  adContainer.appendChild(script3);
+
+  // Cleanup when unmounting
+  return () => {
+    adContainer.innerHTML = "";
+  };
+}, []);
 
   const handleBuyNow = () => {
     // Replace with your actual course URL
@@ -82,7 +101,7 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         
-        <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${showAppBanner ? 'pt-8' : 'pt-12'} pb-16`}>
+        <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${showAppBanner ? 'pt-16' : 'pt-20'} pb-16`}>
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-lg">
@@ -126,6 +145,7 @@ export default function HomePage() {
                     <span>My Profile</span>
                   </Link>
                   
+                  {/* NEW MEMBERSHIP BUTTON */}
                   <Link 
                     to="/membership" 
                     className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
@@ -248,19 +268,15 @@ export default function HomePage() {
                 {feature.description}
               </p>
               
+              {/* Decorative gradient on hover */}
               <div className={`absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-${feature.color}-400 to-${feature.color}-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-3xl`}></div>
             </div>
           ))}
         </div>
 
-        {/* Ad Container - Only for Adzilla */}
+        {/* Ad Banner - Added below Why Choose Us section */}
         <div className="mt-16 text-center">
-          <div id="adzilla-container" className="flex justify-center my-8">
-            {/* Adzilla ad will be loaded here */}
-          </div>
-          
-          {/* Your Course Banner */}
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 shadow-xl mt-8">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 shadow-xl">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
               VIEW ALL COURSES
             </h3>
@@ -277,6 +293,11 @@ export default function HomePage() {
               BUY NOW
             </button>
           </div>
+          
+          {/* Ad container - the scripts will populate this */}
+          <div id="ad-container" className="mt-8 flex justify-center">
+            {/* Ads will be loaded here by the scripts */}
+          </div>
 
           {/* Facilities Section */}
           <div className="mt-12 bg-white rounded-2xl p-8 shadow-lg">
@@ -288,15 +309,91 @@ export default function HomePage() {
         </div>
       </div>
       
-      {/* Rest of your component remains the same */}
       {/* Testimonials Section */}
       <div className="bg-gradient-to-br from-purple-50 to-rose-50 py-20">
-        {/* ... testimonials content ... */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+              Love Stories
+            </h2>
+            <p className="text-xl text-gray-600">
+              Real couples, real happiness
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah & Michael",
+                image: "👫",
+                text: "We found each other on this platform and couldn't be happier. The matching algorithm really works!",
+                date: "Married in 2023"
+              },
+              {
+                name: "Priya & Raj",
+                image: "💑",
+                text: "After months of searching, we finally found our perfect match. Thank you for bringing us together!",
+                date: "Married in 2023"
+              },
+              {
+                name: "Emma & James",
+                image: "👩‍❤️‍👨",
+                text: "The verification process made us feel safe. We're now planning our dream wedding together!",
+                date: "Engaged 2024"
+              }
+            ].map((testimonial, index) => (
+              <div key={index} className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="text-6xl mb-4 text-center">{testimonial.image}</div>
+                <p className="text-gray-700 mb-6 italic leading-relaxed">
+                  "{testimonial.text}"
+                </p>
+                <div className="text-center">
+                  <p className="font-bold text-gray-900">{testimonial.name}</p>
+                  <p className="text-sm text-gray-500">{testimonial.date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
       
       {/* CTA Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* ... CTA content ... */}
+        <div className="bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 rounded-3xl p-12 md:p-16 text-center shadow-2xl relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-10"></div>
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-10"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to Find Your Soulmate?
+            </h2>
+            <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+              Join our community today and start your journey towards a beautiful relationship
+            </p>
+            
+            {!loggedIn ? (
+              <Link 
+                to="/register" 
+                className="inline-flex items-center justify-center gap-2 bg-white text-purple-600 px-10 py-5 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+              >
+                <span>Get Started Free</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            ) : (
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link 
+                  to="/membership" 
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-10 py-5 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>Upgrade to Premium</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       
       {/* Footer */}
