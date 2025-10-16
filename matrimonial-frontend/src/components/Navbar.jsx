@@ -364,8 +364,8 @@ export default function Navbar() {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent"></div>
       </header>
       
-      {/* Spacer with subtle gradient transition */}
-      <div className="h-20 "></div>
+      {/* Spacer with subtle gradient transition
+      <div className="h-20 bg-gradient-to-b from-rose-50/30 to-transparent"></div> */}
     </>
   );
 }
