@@ -651,7 +651,7 @@ const validateForm = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
                   required
-                  placeholder="e.g., 175"
+                  placeholder="e.g., 175 cm"
                 />
               </div>
               <div>
@@ -663,7 +663,7 @@ const validateForm = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
                   required
-                  placeholder="e.g., 70"
+                  placeholder="e.g., 70 Kg"
                 />
               </div>
             </div>
@@ -799,6 +799,7 @@ const validateForm = () => {
                   accept="image/*"
                   onChange={(e) => setProfilePhoto(e.target.files[0])}
                   className="text-white"
+                  required
                 />
               </div>
               <div>
@@ -809,6 +810,7 @@ const validateForm = () => {
                   multiple
                   onChange={(e) => setPhotos(e.target.files)}
                   className="text-white"
+                  required
                 />
               </div>
             </div>
