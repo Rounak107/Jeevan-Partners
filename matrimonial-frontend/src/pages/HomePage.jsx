@@ -211,7 +211,7 @@ export default function HomePage() {
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white">I</div>
               </div>
               <span className="font-semibold text-gray-700">
-                100,000+ Happy Couples
+                40,000+ Happy Couples
               </span>
             </div>
           </div>
@@ -319,8 +319,8 @@ export default function HomePage() {
           {/* Stats Section */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-16">
             {[
-              { number: "100K+", label: "Active Members", icon: Users },
-              { number: "50K+", label: "Success Stories", icon: Heart },
+              { number: "40K+", label: "Active Members", icon: Users },
+              { number: "38K+", label: "Success Stories", icon: Heart },
               { number: "95%", label: "Match Success", icon: TrendingUp },
               { number: "24/7", label: "Support", icon: Clock }
             ].map((stat, index) => (
@@ -368,7 +368,7 @@ export default function HomePage() {
                 
                 <div className="space-y-4">
                   {[
-                    { icon: BarChart3, text: "36-Point Guna Milan Analysis", value: "99.8% Accuracy" },
+                    { icon: BarChart3, text: "36-Point Guna Milan Analysis", value: "98.8% Accuracy" },
                     { icon: Target, text: "Manglik Dosha Detection", value: "AI Verified" },
                     { icon: Zap, text: "Planetary Position Insights", value: "Real-time" },
                     { icon: Brain, text: "Compatibility Prediction", value: "Machine Learning" }
@@ -441,9 +441,9 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { number: "10K+", label: "Data Points Analyzed", icon: Cpu, color: "blue" },
-              { number: "99.9%", label: "AI Accuracy Rate", icon: TrendingUp, color: "green" },
+              { number: "98.9%", label: "AI Accuracy Rate", icon: TrendingUp, color: "green" },
               { number: "0.5s", label: "Analysis Time", icon: Zap, color: "yellow" },
-              { number: "50K+", label: "Successful Matches", icon: Heart, color: "rose" }
+              { number: "15K+", label: "Successful Matches", icon: Heart, color: "rose" }
             ].map((stat, idx) => (
               <div key={idx} className="text-center bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                 <stat.icon className={`w-10 h-10 mx-auto mb-3 text-${stat.color}-600`} />

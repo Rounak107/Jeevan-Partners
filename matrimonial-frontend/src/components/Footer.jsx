@@ -129,7 +129,7 @@ const Footer = () => {
                         {/* Copyright */}
                         <div className="text-center md:text-left">
                             <p className="text-gray-600 text-sm font-medium">
-                                © {new Date().getFullYear()} Couple Marriage Matrimonial App. All rights reserved.
+                                © {new Date().getFullYear()} Couple Marriage - Find Your Perfect Match. All rights reserved.
                             </p>
                         </div>
                         

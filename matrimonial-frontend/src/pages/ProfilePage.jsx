@@ -35,6 +35,36 @@ export default function ProfilePage() {
     phone: ""
   });
 
+const validateForm = () => {
+  const requiredFields = [
+    'name', 'age', 'dob', 'gender', 'city', 'education', 
+    'occupation', 'religion', 'caste', 'height', 'weight', 
+    'phone', 'rashi', 'gotra', 'manglik'
+  ];
+  
+  const missingFields = requiredFields.filter(field => !form[field]?.trim());
+  
+  if (missingFields.length > 0) {
+    alert(`Please fill all required fields: ${missingFields.join(', ')}`);
+    return false;
+  }
+  
+  // Validate phone format
+  const phoneRegex = /^\+91[6-9]\d{9}$/;
+  if (!phoneRegex.test(form.phone)) {
+    alert('Please enter a valid Indian phone number starting with +91');
+    return false;
+  }
+  
+  // Validate profile photo
+  if (!profilePhoto && !profile?.profile_photo) {
+    alert('Please upload a profile photo');
+    return false;
+  }
+  
+  return true;
+};
+
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -106,6 +136,10 @@ export default function ProfilePage() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    // Add this validation check
+  if (!validateForm()) {
+    return;
+  }
     try {
       const fd = new FormData();
 
@@ -499,6 +533,7 @@ export default function ProfilePage() {
                   value={form.name}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 />
               </div>
               <div>
@@ -509,6 +544,8 @@ export default function ProfilePage() {
                   value={form.age}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
+                  min="18" 
                 />
               </div>
             </div>
@@ -521,6 +558,7 @@ export default function ProfilePage() {
                 value={form.dob}
                 onChange={handleChange}
                 className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                required
               />
             </div>
 
@@ -532,6 +570,7 @@ export default function ProfilePage() {
                   value={form.gender}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 >
                   <option value="">Select</option>
                   <option value="male">Male</option>
@@ -547,6 +586,7 @@ export default function ProfilePage() {
                   value={form.city}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 />
               </div>
             </div>
@@ -560,6 +600,7 @@ export default function ProfilePage() {
                   value={form.education}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  requiredui
                 />
               </div>
               <div>
@@ -570,6 +611,7 @@ export default function ProfilePage() {
                   value={form.occupation}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required                  
                 />
               </div>
             </div>
@@ -583,6 +625,7 @@ export default function ProfilePage() {
                   value={form.religion}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 />
               </div>
               <div>
@@ -593,6 +636,7 @@ export default function ProfilePage() {
                   value={form.caste}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 />
               </div>
             </div>
@@ -606,6 +650,7 @@ export default function ProfilePage() {
                   value={form.height}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                   placeholder="e.g., 175"
                 />
               </div>
@@ -617,6 +662,7 @@ export default function ProfilePage() {
                   value={form.weight}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                   placeholder="e.g., 70"
                 />
               </div>
@@ -631,6 +677,7 @@ export default function ProfilePage() {
                 value={form.phone}
                 onChange={handlePhoneInput}
                 className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                required
                 placeholder="+91XXXXXXXXXX"
               />
               <p className="text-gray-400 text-xs mt-1">
@@ -646,6 +693,7 @@ export default function ProfilePage() {
                   value={form.rashi}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 >
                   <option value="">Select Rashi</option>
                   <option value="Mesha">Mesha (Aries)</option>
@@ -670,6 +718,7 @@ export default function ProfilePage() {
                   value={form.gotra}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                   placeholder="e.g., Kashyap, Bharadwaj"
                 />
               </div>
@@ -683,6 +732,7 @@ export default function ProfilePage() {
                   value={form.manglik}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  required
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
