@@ -156,34 +156,48 @@ export default function LoginPage() {
 
           {error && <div className="bg-pink-200 text-pink-800 p-2 rounded mb-4 border border-pink-300">{error}</div>}
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <input
-              className="w-full p-3 rounded-xl border border-pink-200 text-pink-700 font-medium bg-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-300 placeholder:text-pink-300"
-              placeholder="Your Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <form onSubmit={handleLogin} className="flex flex-col items-center space-y-4">
+  {/* Email field */}
+  <div className="w-40 flex flex-col items-center">
+    <label htmlFor="email" className="text-pink-500 font-semibold mb-1 text-sm">Email</label>
+    <div className="relative w-full">
+      <input
+        id="email"
+        className="w-full h-10 rounded-full border border-pink-200 text-pink-700 bg-pink-50 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pink-300 placeholder:text-pink-300 text-sm"
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <span className="absolute left-3 top-2 text-pink-300 text-lg">📧</span>
+    </div>
+  </div>
 
-            <div className="relative">
-              <input
-                className="w-full p-3 rounded-xl border border-pink-200 text-pink-700 bg-pink-50 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-300 placeholder:text-pink-300 font-medium"
-                placeholder="Password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-3 text-pink-400"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label="Toggle Show Password"
-              >
-                {showPassword ? "💞" : "👁️"}
-              </button>
-            </div>
+  {/* Password field */}
+  <div className="w-40 flex flex-col items-center">
+    <label htmlFor="password" className="text-pink-500 font-semibold mb-1 text-sm">Password</label>
+    <div className="relative w-full">
+      <input
+        id="password"
+        className="w-full h-10 rounded-full border border-pink-200 text-pink-700 bg-pink-50 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-pink-300 placeholder:text-pink-300 text-sm"
+        placeholder="Password"
+        type={showPassword ? "text" : "password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <button
+        type="button"
+        className="absolute right-3 top-2 text-pink-400 text-lg"
+        onClick={() => setShowPassword(!showPassword)}
+        aria-label="Toggle Show Password"
+      >
+        {showPassword ? "💞" : "👁️"}
+      </button>
+      <span className="absolute left-3 top-2 text-pink-300 text-lg">🔒</span>
+    </div>
+  </div>
 
             <div className="flex items-center justify-between">
               <button
