@@ -97,27 +97,35 @@ useEffect(() => {
 
   const channel = window.Echo.private(`conversation.${id}`);
 
-  channel.listen(".new-message", (data) => {
-    if (!data || !data.message) return;
-    console.log("💬 Live message received:", data.message);
-
-    const normalized = normalizeMessageStructure(data.message);
-    setMessages((prev) =>
-      prev.some((m) => m.id === normalized.id) ? prev : [...prev, normalized]
-    );
+  // Listen for new messages
+  channel.listen('.new-message', (data) => {
+    console.log("💬 Live message received:", data);
+    
+    if (data && data.message) {
+      const normalized = normalizeMessageStructure(data.message);
+      setMessages((prev) => {
+        // Avoid duplicates
+        if (prev.some((m) => m.id === normalized.id)) {
+          return prev;
+        }
+        return [...prev, normalized];
+      });
+    }
   });
 
-console.log("🧩 Messages count:", messages.length);
+  // Handle subscription events
+  channel.subscribed(() => {
+    console.log("✅ Successfully subscribed to conversation." + id);
+  });
 
+  channel.error((err) => {
+    console.error("❌ Subscription error:", err);
+  });
 
-  channel.subscribed(() =>
-    console.log("✅ Subscribed to conversation." + id)
-  );
-
-  channel.error((e) => console.error("Socket error:", e));
-
+  // Cleanup function
   return () => {
     console.log("🧹 Unsubscribing from conversation." + id);
+    channel.stopListening('.new-message');
     window.Echo.leave(`conversation.${id}`);
   };
 }, [id]);
