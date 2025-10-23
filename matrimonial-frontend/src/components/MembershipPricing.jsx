@@ -196,19 +196,37 @@ const MembershipPricing = () => {
         }
     };
 
-    // Direct payment without confirmation
-    const handleDirectPayment = (plan) => {
-        if (plan.price === 0) {
-            alert('Free plan selected! You can start using the free features immediately.');
-            return;
+    // UPDATED: Handle payment with API call
+const handleDirectPayment = async (plan) => {
+    if (plan.price === 0) {
+        alert('Free plan selected! You can start using the free features immediately.');
+        return;
+    }
+
+    setProcessingPayment(true);
+    
+    try {
+        // Call your backend to initiate payment
+        const response = await API.post('/payments/initiate', {
+            plan_id: plan.id,
+            plan_name: plan.name,
+            amount: plan.price,
+            currency: 'INR'
+        });
+
+        if (response.data.success) {
+            // Redirect to Upay payment page
+            window.location.href = response.data.payment_url;
+        } else {
+            alert('Payment initiation failed: ' + response.data.message);
+            setProcessingPayment(false);
         }
-        
-        setProcessingPayment(true);
-        
-        // Direct redirect to PayU with plan details
-        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
-        window.location.href = payuUrl;
-    };
+    } catch (error) {
+        console.error('Payment error:', error);
+        alert('Payment initiation failed. Please try again.');
+        setProcessingPayment(false);
+    }
+};
 
     if (loading) {
         return (
