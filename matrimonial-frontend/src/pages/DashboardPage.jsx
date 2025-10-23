@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api';
+import API from '../api';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -18,10 +18,10 @@ const DashboardPage = () => {
         try {
             setLoading(true);
             const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
-                api.get('/dashboard/stats'),
-                api.get('/dashboard/users?per_page=5'),
-                api.get('/dashboard/payments?per_page=5'),
-                api.get('/dashboard/activity?per_page=10')
+                API.get('/dashboard/stats'),
+                API.get('/dashboard/users?per_page=5'),
+                API.get('/dashboard/payments?per_page=5'),
+                API.get('/dashboard/activity?per_page=10')
             ]);
 
             if (statsRes.data.success) setStats(statsRes.data.data);
