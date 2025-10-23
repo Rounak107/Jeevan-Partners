@@ -17,6 +17,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import API from "./api";
 import { useEffect } from "react";
+import DashboardPage from './pages/DashboardPage';
 
 export default function App() {
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/call/:id" element={<CallPage />} />
             <Route path="/likes" element={<LikesPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
