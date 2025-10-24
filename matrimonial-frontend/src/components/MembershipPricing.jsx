@@ -196,7 +196,7 @@ const MembershipPricing = () => {
         }
     };
 
-// UPDATED: Handle payment with API call
+// UPDATED: Handle payment with API call - FIXED VERSION
 const handleDirectPayment = async (plan) => {
     if (plan.price === 0) {
         alert('Free plan selected! You can start using the free features immediately.');
@@ -215,16 +215,20 @@ const handleDirectPayment = async (plan) => {
         });
 
         if (response.data.success) {
-            // OPTION 1: Redirect to payment URL
-            //window.location.href = response.data.payment_url;
-             // CORRECT - this sends a POST with params (form auto-post)
-  const formHtml = response.data.paymentform;
-  const newWindow = window.open('', '_blank');
-  newWindow.document.write(formHtml);
-  newWindow.document.close();
-            // OPTION 2: If you want to use the form method
-            // const newWindow = window.open('', '_blank');
-            // newWindow.document.write(response.data.payment_form);
+            // ✅ USE FORM SUBMISSION INSTEAD OF DIRECT REDIRECT
+            if (response.data.payment_form) {
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(response.data.payment_form);
+                    newWindow.document.close();
+                } else {
+                    // Fallback: Show form in current window if popup blocked
+                    document.body.innerHTML = response.data.payment_form;
+                }
+            } else {
+                // Fallback to URL redirect
+                window.location.href = response.data.payment_url;
+            }
             
         } else {
             alert('Payment initiation failed: ' + response.data.message);
