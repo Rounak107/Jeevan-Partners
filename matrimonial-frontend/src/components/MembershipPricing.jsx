@@ -216,8 +216,12 @@ const handleDirectPayment = async (plan) => {
 
         if (response.data.success) {
             // OPTION 1: Redirect to payment URL
-            window.location.href = response.data.payment_url;
-            
+            //window.location.href = response.data.payment_url;
+             // CORRECT - this sends a POST with params (form auto-post)
+  const formHtml = response.data.paymentform;
+  const newWindow = window.open('', '_blank');
+  newWindow.document.write(formHtml);
+  newWindow.document.close();
             // OPTION 2: If you want to use the form method
             // const newWindow = window.open('', '_blank');
             // newWindow.document.write(response.data.payment_form);
