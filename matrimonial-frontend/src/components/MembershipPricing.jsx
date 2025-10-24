@@ -206,6 +206,8 @@ const handleDirectPayment = async (plan) => {
     setProcessingPayment(true);
     
     try {
+        console.log('🔄 Initiating payment for plan:', plan.id);
+        
         // Call your backend to initiate payment
         const response = await API.post('/payments/initiate', {
             plan_id: plan.id,
@@ -214,9 +216,13 @@ const handleDirectPayment = async (plan) => {
             currency: 'INR'
         });
 
+        console.log('📦 Payment API Response:', response.data);
+        
         if (response.data.success) {
-            // ✅ USE FORM SUBMISSION INSTEAD OF DIRECT REDIRECT
+            // ✅ CHECK WHAT WE RECEIVED
             if (response.data.payment_form) {
+                console.log('✅ Using FORM submission method');
+                // Use form submission instead of direct redirect
                 const newWindow = window.open('', '_blank');
                 if (newWindow) {
                     newWindow.document.write(response.data.payment_form);
@@ -225,17 +231,23 @@ const handleDirectPayment = async (plan) => {
                     // Fallback: Show form in current window if popup blocked
                     document.body.innerHTML = response.data.payment_form;
                 }
-            } else {
+            } else if (response.data.payment_url) {
+                console.log('⚠️ Using URL redirect method (fallback)');
                 // Fallback to URL redirect
                 window.location.href = response.data.payment_url;
+            } else {
+                console.error('❌ No payment method received');
+                alert('Payment initiation failed: No payment method received');
+                setProcessingPayment(false);
             }
             
         } else {
+            console.error('❌ Payment initiation failed:', response.data.message);
             alert('Payment initiation failed: ' + response.data.message);
             setProcessingPayment(false);
         }
     } catch (error) {
-        console.error('Payment error:', error);
+        console.error('💥 Payment error:', error);
         alert('Payment initiation failed. Please try again.');
         setProcessingPayment(false);
     }
