@@ -9,14 +9,41 @@ const DashboardPage = () => {
     const [activity, setActivity] = useState({});
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        fetchDashboardData();
+        checkAuthAndFetchData();
     }, []);
+
+    const checkAuthAndFetchData = async () => {
+        try {
+            setLoading(true);
+            
+            // First, check if we're authenticated
+            const authCheck = await API.get('/test-auth-check');
+            console.log('Auth check result:', authCheck.data);
+            setIsAuthenticated(true);
+            
+            // If authenticated, fetch dashboard data
+            await fetchDashboardData();
+            
+        } catch (error) {
+            console.error('Authentication check failed:', error);
+            setIsAuthenticated(false);
+            
+            if (error.response?.status === 401) {
+                console.log('User not authenticated, redirecting to login...');
+                // Redirect to login
+                window.location.href = '/login';
+                return;
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchDashboardData = async () => {
         try {
-            setLoading(true);
             const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
                 API.get('/dashboard/stats'),
                 API.get('/dashboard/users?per_page=5'),
@@ -24,21 +51,53 @@ const DashboardPage = () => {
                 API.get('/dashboard/activity?per_page=10')
             ]);
 
-            if (statsRes.data.success) setStats(statsRes.data.data);
-            if (usersRes.data.success) setUsers(usersRes.data.data.data);
-            if (paymentsRes.data.success) setPayments(paymentsRes.data.data.data);
-            if (activityRes.data.success) setActivity(activityRes.data.data);
+            console.log('Dashboard API Responses:', {
+                stats: statsRes.data,
+                users: usersRes.data,
+                payments: paymentsRes.data,
+                activity: activityRes.data
+            });
+
+            if (statsRes.data && statsRes.data.success) setStats(statsRes.data.data);
+            else console.error('Stats API error:', statsRes.data);
+
+            if (usersRes.data && usersRes.data.success) setUsers(usersRes.data.data?.data || []);
+            else console.error('Users API error:', usersRes.data);
+
+            if (paymentsRes.data && paymentsRes.data.success) setPayments(paymentsRes.data.data?.data || []);
+            else console.error('Payments API error:', paymentsRes.data);
+
+            if (activityRes.data && activityRes.data.success) setActivity(activityRes.data.data || {});
+            else console.error('Activity API error:', activityRes.data);
+
         } catch (error) {
             console.error('Failed to fetch dashboard data:', error);
-        } finally {
-            setLoading(false);
+            console.error('Error details:', error.response?.data);
+            
+            // Set empty states
+            setStats(null);
+            setUsers([]);
+            setPayments([]);
+            setActivity({});
         }
     };
 
     if (loading) {
         return (
             <div className="dashboard-loading">
-                <div className="loading-spinner">Loading Dashboard...</div>
+                <div className="loading-spinner">
+                    {isAuthenticated ? 'Loading Dashboard...' : 'Checking authentication...'}
+                </div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="dashboard-loading">
+                <div className="loading-spinner">
+                    Redirecting to login...
+                </div>
             </div>
         );
     }
