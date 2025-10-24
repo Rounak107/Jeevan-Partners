@@ -196,7 +196,7 @@ const MembershipPricing = () => {
         }
     };
 
-    // UPDATED: Handle payment with API call
+// UPDATED: Handle payment with API call
 const handleDirectPayment = async (plan) => {
     if (plan.price === 0) {
         alert('Free plan selected! You can start using the free features immediately.');
@@ -215,8 +215,13 @@ const handleDirectPayment = async (plan) => {
         });
 
         if (response.data.success) {
-            // Redirect to Upay payment page
+            // OPTION 1: Redirect to payment URL
             window.location.href = response.data.payment_url;
+            
+            // OPTION 2: If you want to use the form method
+            // const newWindow = window.open('', '_blank');
+            // newWindow.document.write(response.data.payment_form);
+            
         } else {
             alert('Payment initiation failed: ' + response.data.message);
             setProcessingPayment(false);
