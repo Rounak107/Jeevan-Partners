@@ -14,26 +14,26 @@ export default function ProfilePage() {
 
   // form states
   const [form, setForm] = useState({
-    name: "",
-    age: "",
-    dob: "",
-    gender: "",
-    city: "",
-    education: "",
-    occupation: "",
-    religion: "",
-    caste: "",
-    height: "",
-    weight: "",
-    partner_expectations: "",
-    gon_type: "",
-    rashi: "",
-    gotra: "",
-    manglik: "",
-    mangal_dosha_details: "",
-    about: "",
-    phone: ""
-  });
+  name: "",
+  age: "",
+  dob: "",
+  gender: "",
+  city: "",
+  education: "",
+  occupation: "",
+  religion: "",
+  caste: "",
+  height: "",
+  weight: "",
+  partner_expectations: "",
+  gon_type: "",
+  rashi: "",
+  gotra: "",
+  manglik: "",
+  mangal_dosha_details: "",
+  about: "",
+  phone: ""
+});
 
 const validateForm = () => {
   const requiredFields = [
@@ -42,7 +42,18 @@ const validateForm = () => {
     'phone', 'rashi', 'gotra', 'manglik'
   ];
   
-  const missingFields = requiredFields.filter(field => !form[field]?.trim());
+  const missingFields = requiredFields.filter(field => {
+    const value = form[field];
+    
+    // Handle different data types
+    if (typeof value === 'number') {
+      return value === null || value === undefined || value === '';
+    } else if (typeof value === 'string') {
+      return !value?.trim();
+    } else {
+      return !value; // For other types (boolean, etc.)
+    }
+  });
   
   if (missingFields.length > 0) {
     alert(`Please fill all required fields: ${missingFields.join(', ')}`);
@@ -56,11 +67,11 @@ const validateForm = () => {
     return false;
   }
   
-  // Validate profile photo
-  if (!profilePhoto && !profile?.profile_photo) {
-    alert('Please upload a profile photo');
-    return false;
-  }
+  // Validate profile photo - REMOVE this validation for now to test
+  // if (!profilePhoto && !profile?.profile_photo) {
+  //   alert('Please upload a profile photo');
+  //   return false;
+  // }
   
   return true;
 };
@@ -74,114 +85,129 @@ const validateForm = () => {
     : 'https://couplemarriage.com';
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        if (!id) {
-          setError("Missing profile id");
-          return;
-        }
-
-        if (id === "me") {
-          const { data } = await API.get("/profile");
-          if (data) {
-            setProfile(data);
-            setForm({
-              name: data.user?.name || "",
-              age: data.age || "",
-              gender: data.gender || "",
-              city: data.city || "",
-              education: data.education || "",
-              occupation: data.occupation || "",
-              religion: data.religion || "",
-              caste: data.caste || "",
-              height: data.height || "",
-              weight: data.weight || "",
-              partner_expectations: data.partner_expectations || "",
-              gon_type: data.gon_type || "",
-              rashi: data.rashi || "",
-              gotra: data.gotra || "",
-              manglik: data.manglik || "",
-              mangal_dosha_details: data.mangal_dosha_details || "",
-              about: data.about || "",
-              phone: data.user?.phone || ""
-            });
-          } else {
-            setError("You don't have a profile yet");
-          }
-        } else {
-          const { data } = await API.get(`/profiles/${id}`);
-          setProfile(data);
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-        if (err.response?.status === 404) {
-          setError("Profile not found");
-        } else {
-          setError("Failed to load profile");
-        }
-      } finally {
-        setLoading(false);
+      if (!id) {
+        setError("Missing profile id");
+        return;
       }
-    };
 
-    fetchProfile();
-  }, [id]);
+      if (id === "me") {
+        const { data } = await API.get("/profile");
+        if (data) {
+          setProfile(data);
+          setForm({
+            name: data.user?.name || "",
+            age: data.age?.toString() || "", // Convert numbers to strings
+            gender: data.gender || "",
+            city: data.city || "",
+            education: data.education || "",
+            occupation: data.occupation || "",
+            religion: data.religion || "",
+            caste: data.caste || "",
+            height: data.height?.toString() || "", // Convert numbers to strings
+            weight: data.weight?.toString() || "", // Convert numbers to strings
+            partner_expectations: data.partner_expectations || "",
+            gon_type: data.gon_type || "",
+            rashi: data.rashi || "",
+            gotra: data.gotra || "",
+            manglik: data.manglik || "",
+            mangal_dosha_details: data.mangal_dosha_details || "",
+            about: data.about || "",
+            phone: data.user?.phone || ""
+          });
+        } else {
+          setError("You don't have a profile yet");
+        }
+      } else {
+        const { data } = await API.get(`/profiles/${id}`);
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      if (err.response?.status === 404) {
+        setError("Profile not found");
+      } else {
+        setError("Failed to load profile");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfile();
+}, [id]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
-    // Add this validation check
+  e.preventDefault();
+  
+  console.log('Form data before validation:', form);
+  console.log('Profile photo:', profilePhoto);
+  console.log('Additional photos:', photos);
+  
   if (!validateForm()) {
+    console.log('Form validation failed');
     return;
   }
-    try {
-      const fd = new FormData();
 
-      // Add all form fields
-      Object.keys(form).forEach((key) => {
-        if (form[key]) {
-          fd.append(key, form[key]);
-        }
-      });
+  try {
+    const fd = new FormData();
 
-      if (profilePhoto) {
-        fd.append("profile_photo", profilePhoto);
+    // Add all form fields - convert numbers properly
+    Object.keys(form).forEach((key) => {
+      if (form[key] !== null && form[key] !== undefined && form[key] !== '') {
+        fd.append(key, form[key]);
       }
+    });
 
-      if (photos.length > 0) {
-        Array.from(photos).forEach((file) => {
-          fd.append("photos[]", file);
-        });
-      }
-
-      let res;
-      if (profile && profile.id) {
-        res = await API.post("/profiles", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        res = await API.post("/profiles", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }
-
-      setProfile(res.data);
-      setEditMode(false);
-      window.location.reload();
-    } catch (err) {
-      console.error("Error saving profile:", err);
-      alert(
-        "Failed to save profile: " +
-          (err.response?.data?.message || "Unknown error")
-      );
+    if (profilePhoto) {
+      fd.append("profile_photo", profilePhoto);
+      console.log('Added profile photo to form data');
     }
-  };
+
+    if (photos.length > 0) {
+      Array.from(photos).forEach((file, index) => {
+        fd.append("photos[]", file);
+        console.log(`Added photo ${index} to form data:`, file.name);
+      });
+    }
+
+    console.log('Sending form data to server...');
+
+    let res;
+    if (profile && profile.id) {
+      res = await API.post("/profiles", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      res = await API.post("/profiles", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    }
+
+    console.log('Profile saved successfully:', res.data);
+    
+    setProfile(res.data);
+    setEditMode(false);
+    // Instead of reloading, update state properly
+    // window.location.reload();
+    
+  } catch (err) {
+    console.error("Error saving profile:", err);
+    console.error("Error response:", err.response);
+    alert(
+      "Failed to save profile: " +
+        (err.response?.data?.message || err.message || "Unknown error")
+    );
+  }
+};
 
   // Helper functions for phone display
   const maskPhoneNumber = (phone) => {
