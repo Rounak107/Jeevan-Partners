@@ -45,10 +45,10 @@ const DashboardPage = () => {
    const fetchDashboardData = async () => {
     try {
         const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
-            API.get('/api/dashboard/stats'),        // Add /api prefix
-            API.get('/api/dashboard/users?per_page=5'),
-            API.get('/api/dashboard/payments?per_page=5'),
-            API.get('/api/dashboard/activity?per_page=10')
+            API.get('/dashboard/stats'),        // Add /api prefix
+            API.get('/dashboard/users?per_page=5'),
+            API.get('/dashboard/payments?per_page=5'),
+            API.get('/dashboard/activity?per_page=10')
         ]);
 
             console.log('Dashboard API Responses:', {
