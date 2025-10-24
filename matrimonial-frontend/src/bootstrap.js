@@ -66,7 +66,6 @@
 
 // console.log("✅ Laravel Echo (Pusher) initialized");
 
-
 import axios from "axios";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";

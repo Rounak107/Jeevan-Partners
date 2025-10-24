@@ -56,8 +56,8 @@
 import axios from "axios";
 import { getToken } from "./auth";
 
-// Use the same domain as your frontend to avoid CORS issues
-const API_BASE_URL = window.location.origin + '/api';
+// Use the same domain as your frontend - DON'T add /api here
+const API_BASE_URL = window.location.origin;
 
 const API = axios.create({
   baseURL: API_BASE_URL,
