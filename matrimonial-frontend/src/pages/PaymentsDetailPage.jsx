@@ -8,10 +8,30 @@ const PaymentsDetailPage = () => {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newPayment, setNewPayment] = useState({
+        user_id: '',
+        amount: '',
+        plan_name: '',
+        payment_status: 'pending',
+        payment_method: 'manual',
+        user_name: '',
+        user_email: ''
+    });
 
     useEffect(() => {
         fetchPayments();
     }, [currentPage, search]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setActiveDropdown(null);
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     const fetchPayments = async () => {
         try {
@@ -28,7 +48,9 @@ const PaymentsDetailPage = () => {
         }
     };
 
-    const updatePaymentStatus = async (paymentId, newStatus) => {
+    const updatePaymentStatus = async (paymentId, newStatus, e) => {
+        if (e) e.stopPropagation();
+        
         try {
             const response = await API.put(`/dashboard/payments/${paymentId}/status`, {
                 status: newStatus
@@ -43,12 +65,52 @@ const PaymentsDetailPage = () => {
                             : payment
                     )
                 );
+                setActiveDropdown(null);
                 alert('Payment status updated successfully!');
             }
         } catch (error) {
             console.error('Failed to update payment status:', error);
-            alert('Failed to update payment status');
+            console.error('Error details:', error.response?.data);
+            alert('Failed to update payment status: ' + (error.response?.data?.message || error.message));
         }
+    };
+
+    const handleAddPayment = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await API.post('/dashboard/payments', newPayment);
+            
+            if (response.data.success) {
+                setShowAddModal(false);
+                setNewPayment({
+                    user_id: '',
+                    amount: '',
+                    plan_name: '',
+                    payment_status: 'pending',
+                    payment_method: 'manual',
+                    user_name: '',
+                    user_email: ''
+                });
+                fetchPayments(); // Refresh the list
+                alert('Payment added successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to add payment:', error);
+            alert('Failed to add payment: ' + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const toggleDropdown = (paymentId, e) => {
+        e.stopPropagation();
+        setActiveDropdown(activeDropdown === paymentId ? null : paymentId);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewPayment(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     if (loading) {
@@ -61,6 +123,104 @@ const PaymentsDetailPage = () => {
 
     return (
         <div className="detailed-page">
+            {/* Add Payment Modal */}
+            {showAddModal && (
+                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Add New Payment</h2>
+                            <button className="close-btn" onClick={() => setShowAddModal(false)}>×</button>
+                        </div>
+                        <form onSubmit={handleAddPayment}>
+                            <div className="form-group">
+                                <label>User Name *</label>
+                                <input
+                                    type="text"
+                                    name="user_name"
+                                    value={newPayment.user_name}
+                                    onChange={handleInputChange}
+                                    className="form-control"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>User Email *</label>
+                                <input
+                                    type="email"
+                                    name="user_email"
+                                    value={newPayment.user_email}
+                                    onChange={handleInputChange}
+                                    className="form-control"
+                                    required
+                                />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Amount (₹) *</label>
+                                    <input
+                                        type="number"
+                                        name="amount"
+                                        value={newPayment.amount}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        step="0.01"
+                                        min="0"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Plan Name *</label>
+                                    <input
+                                        type="text"
+                                        name="plan_name"
+                                        value={newPayment.plan_name}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Payment Status</label>
+                                    <select
+                                        name="payment_status"
+                                        value={newPayment.payment_status}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                    >
+                                        <option value="pending">Pending</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Payment Method</label>
+                                    <select
+                                        name="payment_method"
+                                        value={newPayment.payment_method}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                    >
+                                        <option value="manual">Manual Entry</option>
+                                        <option value="upi">UPI</option>
+                                        <option value="card">Card</option>
+                                        <option value="netbanking">Net Banking</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    Add Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <div className="page-header">
                 <h1>All Payments</h1>
                 <div className="page-actions">
@@ -71,6 +231,12 @@ const PaymentsDetailPage = () => {
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
                     />
+                    <button 
+                        className="btn btn-success"
+                        onClick={() => setShowAddModal(true)}
+                    >
+                        + Add Payment
+                    </button>
                 </div>
             </div>
 
@@ -92,7 +258,12 @@ const PaymentsDetailPage = () => {
                         {payments.map(payment => (
                             <tr key={payment.id}>
                                 <td data-label="Payment ID">{payment.id}</td>
-                                <td data-label="User">{payment.user?.name || 'N/A'}</td>
+                                <td data-label="User">
+                                    <div>
+                                        <div style={{ fontWeight: '500' }}>{payment.user?.name || 'N/A'}</div>
+                                        <div style={{ fontSize: '12px', color: '#6b7280' }}>{payment.user?.email || ''}</div>
+                                    </div>
+                                </td>
                                 <td data-label="Amount">₹{payment.amount}</td>
                                 <td data-label="Plan">{payment.plan_name || 'N/A'}</td>
                                 <td data-label="Status">
@@ -100,23 +271,32 @@ const PaymentsDetailPage = () => {
                                         {payment.payment_status}
                                     </span>
                                 </td>
-                                <td data-label="Payment Method">{payment.payment_method || 'N/A'}</td>
+                                <td data-label="Payment Method">
+                                    <span style={{ textTransform: 'capitalize' }}>
+                                        {payment.payment_method || 'N/A'}
+                                    </span>
+                                </td>
                                 <td data-label="Date">{new Date(payment.created_at).toLocaleString()}</td>
                                 <td data-label="Actions">
                                     <div className="dropdown">
-                                        <button className="action-btn edit">Edit Status</button>
-                                        <div className="dropdown-content">
+                                        <button 
+                                            className="dropdown-toggle"
+                                            onClick={(e) => toggleDropdown(payment.id, e)}
+                                        >
+                                            Edit Status
+                                        </button>
+                                        <div className={`dropdown-content ${activeDropdown === payment.id ? 'show' : ''}`}>
                                             <button 
-                                                onClick={() => updatePaymentStatus(payment.id, 'pending')}
-                                                className={payment.payment_status === 'pending' ? 'active' : ''}
+                                                onClick={(e) => updatePaymentStatus(payment.id, 'pending', e)}
+                                                className={`dropdown-item ${payment.payment_status === 'pending' ? 'active' : ''}`}
                                             >
-                                                Pending
+                                                ⏳ Pending
                                             </button>
                                             <button 
-                                                onClick={() => updatePaymentStatus(payment.id, 'completed')}
-                                                className={payment.payment_status === 'completed' ? 'active' : ''}
+                                                onClick={(e) => updatePaymentStatus(payment.id, 'completed', e)}
+                                                className={`dropdown-item ${payment.payment_status === 'completed' ? 'active' : ''}`}
                                             >
-                                                Completed
+                                                ✅ Completed
                                             </button>
                                         </div>
                                     </div>
