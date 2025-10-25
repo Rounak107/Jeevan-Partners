@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer"; // Import the Footer
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -15,9 +15,12 @@ import CallPage from './pages/CallPage';
 import MembershipPricing from './components/MembershipPricing';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import DashboardPage from './pages/DashboardPage';
+import UsersDetailPage from './pages/UsersDetailPage';
+import PaymentsDetailPage from './pages/PaymentsDetailPage';
+import ActivityDetailPage from './pages/ActivityDetailPage';
 import API from "./api";
 import { useEffect } from "react";
-import DashboardPage from './pages/DashboardPage';
 
 export default function App() {
   useEffect(() => {
@@ -25,6 +28,7 @@ export default function App() {
       console.log("✅ Global CSRF cookie initialized");
     });
   }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-900 flex flex-col">
@@ -46,6 +50,9 @@ export default function App() {
             <Route path="/call/:id" element={<CallPage />} />
             <Route path="/likes" element={<LikesPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/users" element={<UsersDetailPage />} />
+            <Route path="/dashboard/payments" element={<PaymentsDetailPage />} />
+            <Route path="/dashboard/activity" element={<ActivityDetailPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

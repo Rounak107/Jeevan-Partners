@@ -10,10 +10,20 @@ const DashboardPage = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
 
     useEffect(() => {
         checkAuthAndFetchData();
-    }, []);
+        
+        // Set up auto-refresh every 30 seconds
+        const interval = setInterval(() => {
+            if (isAuthenticated) {
+                fetchDashboardData();
+            }
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [isAuthenticated]);
 
     const checkAuthAndFetchData = async () => {
         try {
@@ -33,7 +43,6 @@ const DashboardPage = () => {
             
             if (error.response?.status === 401) {
                 console.log('User not authenticated, redirecting to login...');
-                // Redirect to login
                 window.location.href = '/login';
                 return;
             }
@@ -42,14 +51,14 @@ const DashboardPage = () => {
         }
     };
 
-   const fetchDashboardData = async () => {
-    try {
-        const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
-            API.get('/dashboard/stats'),        // Add /api prefix
-            API.get('/dashboard/users?per_page=5'),
-            API.get('/dashboard/payments?per_page=5'),
-            API.get('/dashboard/activity?per_page=10')
-        ]);
+    const fetchDashboardData = async () => {
+        try {
+            const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
+                API.get('/dashboard/stats'),
+                API.get('/dashboard/users?per_page=5'),
+                API.get('/dashboard/payments?per_page=5'),
+                API.get('/dashboard/activity?per_page=10')
+            ]);
 
             console.log('Dashboard API Responses:', {
                 stats: statsRes.data,
@@ -59,27 +68,25 @@ const DashboardPage = () => {
             });
 
             if (statsRes.data && statsRes.data.success) setStats(statsRes.data.data);
-            else console.error('Stats API error:', statsRes.data);
-
             if (usersRes.data && usersRes.data.success) setUsers(usersRes.data.data?.data || []);
-            else console.error('Users API error:', usersRes.data);
-
             if (paymentsRes.data && paymentsRes.data.success) setPayments(paymentsRes.data.data?.data || []);
-            else console.error('Payments API error:', paymentsRes.data);
-
             if (activityRes.data && activityRes.data.success) setActivity(activityRes.data.data || {});
-            else console.error('Activity API error:', activityRes.data);
 
+            setLastUpdated(new Date());
+            
         } catch (error) {
             console.error('Failed to fetch dashboard data:', error);
             console.error('Error details:', error.response?.data);
             
-            // Set empty states
             setStats(null);
             setUsers([]);
             setPayments([]);
             setActivity({});
         }
+    };
+
+    const refreshData = () => {
+        fetchDashboardData();
     };
 
     if (loading) {
@@ -105,8 +112,22 @@ const DashboardPage = () => {
     return (
         <div className="dashboard-page">
             <div className="dashboard-header">
-                <h1>Admin Dashboard</h1>
-                <p>Manage your matrimonial platform</p>
+                <div className="header-content">
+                    <div>
+                        <h1>Admin Dashboard</h1>
+                        <p>Manage your matrimonial platform</p>
+                    </div>
+                    <div className="header-actions">
+                        {lastUpdated && (
+                            <span className="last-updated">
+                                Last updated: {lastUpdated.toLocaleTimeString()}
+                            </span>
+                        )}
+                        <button className="refresh-btn" onClick={refreshData}>
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Navigation Tabs */}
@@ -150,7 +171,7 @@ const DashboardPage = () => {
 
 // Overview Tab Component
 const OverviewTab = ({ stats }) => {
-    if (!stats) return <div>No data available</div>;
+    if (!stats) return <div className="no-data">No data available</div>;
 
     return (
         <div className="overview-tab">
@@ -254,15 +275,19 @@ const OverviewTab = ({ stats }) => {
 const UsersTab = ({ users }) => {
     return (
         <div className="users-tab">
-            <h3>Recent Users</h3>
-            <div className="users-table">
-                <table>
+            <div className="tab-header">
+                <h3>Recent Users</h3>
+                <a href="/dashboard/users" className="view-all-link">
+                    View All Users →
+                </a>
+            </div>
+            <div className="table-container">
+                <table className="responsive-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Phone</th>
                             <th>Profile Completion</th>
                             <th>Member</th>
                             <th>Joined</th>
@@ -271,11 +296,10 @@ const UsersTab = ({ users }) => {
                     <tbody>
                         {users.map(user => (
                             <tr key={user.id}>
-                                <td>{user.id}</td>
-                                <td>{user.name}</td>
-                                <td>{user.email}</td>
-                                <td>{user.phone || 'N/A'}</td>
-                                <td>
+                                <td data-label="ID">{user.id}</td>
+                                <td data-label="Name">{user.name}</td>
+                                <td data-label="Email">{user.email}</td>
+                                <td data-label="Profile Completion">
                                     <div className="completion-bar">
                                         <div 
                                             className="completion-fill"
@@ -284,14 +308,14 @@ const UsersTab = ({ users }) => {
                                         <span>{user.profile_completion || 0}%</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Member">
                                     {user.has_active_membership ? (
                                         <span className="badge success">Premium</span>
                                     ) : (
                                         <span className="badge">Free</span>
                                     )}
                                 </td>
-                                <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                                <td data-label="Joined">{new Date(user.created_at).toLocaleDateString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -305,9 +329,14 @@ const UsersTab = ({ users }) => {
 const PaymentsTab = ({ payments }) => {
     return (
         <div className="payments-tab">
-            <h3>Recent Payments</h3>
-            <div className="payments-table">
-                <table>
+            <div className="tab-header">
+                <h3>Recent Payments</h3>
+                <a href="/dashboard/payments" className="view-all-link">
+                    View All Payments →
+                </a>
+            </div>
+            <div className="table-container">
+                <table className="responsive-table">
                     <thead>
                         <tr>
                             <th>Payment ID</th>
@@ -321,16 +350,16 @@ const PaymentsTab = ({ payments }) => {
                     <tbody>
                         {payments.map(payment => (
                             <tr key={payment.id}>
-                                <td>{payment.id}</td>
-                                <td>{payment.user?.name || 'N/A'}</td>
-                                <td>₹{payment.amount}</td>
-                                <td>{payment.plan_name || 'N/A'}</td>
-                                <td>
-                                    <span className={`status-badge ${payment.status}`}>
-                                        {payment.status}
+                                <td data-label="Payment ID">{payment.id}</td>
+                                <td data-label="User">{payment.user?.name || 'N/A'}</td>
+                                <td data-label="Amount">₹{payment.amount}</td>
+                                <td data-label="Plan">{payment.plan_name || 'N/A'}</td>
+                                <td data-label="Status">
+                                    <span className={`status-badge ${payment.payment_status}`}>
+                                        {payment.payment_status}
                                     </span>
                                 </td>
-                                <td>{new Date(payment.created_at).toLocaleDateString()}</td>
+                                <td data-label="Date">{new Date(payment.created_at).toLocaleDateString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -344,6 +373,12 @@ const PaymentsTab = ({ payments }) => {
 const ActivityTab = ({ activity }) => {
     return (
         <div className="activity-tab">
+            <div className="tab-header">
+                <h3>Recent Activity</h3>
+                <a href="/dashboard/activity" className="view-all-link">
+                    View All Activity →
+                </a>
+            </div>
             <div className="activity-columns">
                 {/* Recent Likes */}
                 <div className="activity-column">
