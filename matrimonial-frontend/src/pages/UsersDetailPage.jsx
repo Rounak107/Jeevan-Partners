@@ -41,38 +41,45 @@ const UsersDetailPage = () => {
     };
 
     const updateUserMembership = async (userId, planType) => {
-        try {
-            setUpdatingUser(userId);
-            
-            const response = await API.put(`/dashboard/users/${userId}/membership`, {
-                plan_type: planType
-            });
+    try {
+        setUpdatingUser(userId);
+        
+        console.log(`Updating user ${userId} to plan: ${planType}`);
+        
+        const response = await API.put(`/dashboard/users/${userId}/membership`, {
+            plan_type: planType
+        });
 
-            if (response.data.success) {
-                // Update the local state
-                setUsers(prevUsers => 
-                    prevUsers.map(user => 
-                        user.id === userId 
-                            ? { 
-                                ...user, 
-                                has_active_membership: planType !== 'free',
-                                current_membership_plan: planType,
-                                membership_plan: planType
-                            } 
-                            : user
-                    )
-                );
-                setActiveDropdown(null);
-                alert(response.data.message || `Membership updated to ${planType.toUpperCase()} successfully! User's plan features will be activated soon.`);
-            }
-        } catch (error) {
-            console.error('Failed to update user membership:', error);
-            console.error('Error details:', error.response?.data);
-            alert('Failed to update membership: ' + (error.response?.data?.message || error.message));
-        } finally {
-            setUpdatingUser(null);
+        if (response.data.success) {
+            console.log('Membership update successful:', response.data);
+            
+            // Update the local state
+            setUsers(prevUsers => 
+                prevUsers.map(user => 
+                    user.id === userId 
+                        ? { 
+                            ...user, 
+                            has_active_membership: planType !== 'free',
+                            current_membership_plan: planType,
+                            membership_plan: planType
+                        } 
+                        : user
+                )
+            );
+            setActiveDropdown(null);
+            alert(response.data.message || `Membership updated to ${planType.toUpperCase()} successfully! User's plan features will be activated soon.`);
+            
+            // Force refresh to ensure changes are reflected
+            fetchUsers();
         }
-    };
+    } catch (error) {
+        console.error('Failed to update user membership:', error);
+        console.error('Error details:', error.response?.data);
+        alert('Failed to update membership: ' + (error.response?.data?.message || error.message));
+    } finally {
+        setUpdatingUser(null);
+    }
+};
 
     const toggleDropdown = (userId, e) => {
         e.stopPropagation();
