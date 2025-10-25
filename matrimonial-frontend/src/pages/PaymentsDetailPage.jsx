@@ -11,14 +11,14 @@ const PaymentsDetailPage = () => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newPayment, setNewPayment] = useState({
-        user_id: '',
+        user_name: '',
+        user_email: '',
         amount: '',
         plan_name: '',
         payment_status: 'pending',
-        payment_method: 'manual',
-        user_name: '',
-        user_email: ''
+        payment_method: 'manual'
     });
+    const [addingPayment, setAddingPayment] = useState(false);
 
     useEffect(() => {
         fetchPayments();
@@ -43,6 +43,7 @@ const PaymentsDetailPage = () => {
             }
         } catch (error) {
             console.error('Failed to fetch payments:', error);
+            alert('Failed to load payments: ' + (error.response?.data?.message || error.message));
         } finally {
             setLoading(false);
         }
@@ -77,26 +78,47 @@ const PaymentsDetailPage = () => {
 
     const handleAddPayment = async (e) => {
         e.preventDefault();
+        setAddingPayment(true);
+        
         try {
+            console.log('Adding payment:', newPayment);
+            
             const response = await API.post('/dashboard/payments', newPayment);
             
             if (response.data.success) {
                 setShowAddModal(false);
                 setNewPayment({
-                    user_id: '',
+                    user_name: '',
+                    user_email: '',
                     amount: '',
                     plan_name: '',
                     payment_status: 'pending',
-                    payment_method: 'manual',
-                    user_name: '',
-                    user_email: ''
+                    payment_method: 'manual'
                 });
                 fetchPayments(); // Refresh the list
                 alert('Payment added successfully!');
+            } else {
+                throw new Error(response.data.message || 'Failed to add payment');
             }
         } catch (error) {
             console.error('Failed to add payment:', error);
-            alert('Failed to add payment: ' + (error.response?.data?.message || error.message));
+            console.error('Error response:', error.response?.data);
+            
+            let errorMessage = 'Failed to add payment: ';
+            
+            if (error.response?.data?.message) {
+                errorMessage += error.response.data.message;
+            } else if (error.response?.data?.error) {
+                errorMessage += error.response.data.error;
+            } else if (error.message) {
+                errorMessage += error.message;
+            } else {
+                errorMessage += 'Unknown server error';
+            }
+            
+            alert(errorMessage);
+        } finally {
+            setAddingPayment(false);
         }
     };
 
@@ -113,6 +135,18 @@ const PaymentsDetailPage = () => {
         }));
     };
 
+    const resetForm = () => {
+        setNewPayment({
+            user_name: '',
+            user_email: '',
+            amount: '',
+            plan_name: '',
+            payment_status: 'pending',
+            payment_method: 'manual'
+        });
+        setShowAddModal(false);
+    };
+
     if (loading) {
         return (
             <div className="detailed-page">
@@ -125,11 +159,11 @@ const PaymentsDetailPage = () => {
         <div className="detailed-page">
             {/* Add Payment Modal */}
             {showAddModal && (
-                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                <div className="modal-overlay" onClick={resetForm}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Add New Payment</h2>
-                            <button className="close-btn" onClick={() => setShowAddModal(false)}>×</button>
+                            <button className="close-btn" onClick={resetForm}>×</button>
                         </div>
                         <form onSubmit={handleAddPayment}>
                             <div className="form-group">
@@ -141,6 +175,7 @@ const PaymentsDetailPage = () => {
                                     onChange={handleInputChange}
                                     className="form-control"
                                     required
+                                    placeholder="Enter user full name"
                                 />
                             </div>
                             <div className="form-group">
@@ -152,6 +187,7 @@ const PaymentsDetailPage = () => {
                                     onChange={handleInputChange}
                                     className="form-control"
                                     required
+                                    placeholder="Enter user email address"
                                 />
                             </div>
                             <div className="form-row">
@@ -166,6 +202,7 @@ const PaymentsDetailPage = () => {
                                         step="0.01"
                                         min="0"
                                         required
+                                        placeholder="0.00"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -177,6 +214,7 @@ const PaymentsDetailPage = () => {
                                         onChange={handleInputChange}
                                         className="form-control"
                                         required
+                                        placeholder="e.g., Starter Membership"
                                     />
                                 </div>
                             </div>
@@ -205,15 +243,25 @@ const PaymentsDetailPage = () => {
                                         <option value="upi">UPI</option>
                                         <option value="card">Card</option>
                                         <option value="netbanking">Net Banking</option>
+                                        <option value="cash">Cash</option>
                                     </select>
                                 </div>
                             </div>
                             <div className="modal-actions">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
+                                <button 
+                                    type="button" 
+                                    className="btn btn-secondary" 
+                                    onClick={resetForm}
+                                    disabled={addingPayment}
+                                >
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary">
-                                    Add Payment
+                                <button 
+                                    type="submit" 
+                                    className="btn btn-primary"
+                                    disabled={addingPayment}
+                                >
+                                    {addingPayment ? 'Adding...' : 'Add Payment'}
                                 </button>
                             </div>
                         </form>
