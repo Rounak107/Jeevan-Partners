@@ -76,6 +76,30 @@ const PaymentsDetailPage = () => {
         }
     };
 
+    // Helper function to generate plan_id from plan_name
+    const generatePlanId = (planName) => {
+        const planMap = {
+            'starter': 'plan_starter',
+            'basic': 'plan_basic', 
+            'premium': 'plan_premium',
+            'standard': 'plan_standard',
+            'gold': 'plan_gold',
+            'silver': 'plan_silver',
+            'bronze': 'plan_bronze'
+        };
+
+        const lowerPlanName = planName.toLowerCase().trim();
+        
+        for (const [key, value] of Object.entries(planMap)) {
+            if (lowerPlanName.includes(key)) {
+                return value;
+            }
+        }
+
+        // If no match found, create a simple ID
+        return 'plan_' + lowerPlanName.replace(/\s+/g, '_');
+    };
+
     const handleAddPayment = async (e) => {
         e.preventDefault();
         setAddingPayment(true);
@@ -83,6 +107,7 @@ const PaymentsDetailPage = () => {
         try {
             console.log('Adding payment:', newPayment);
             
+            // The plan_id will be generated automatically in the backend
             const response = await API.post('/dashboard/payments', newPayment);
             
             if (response.data.success) {
@@ -215,7 +240,18 @@ const PaymentsDetailPage = () => {
                                         className="form-control"
                                         required
                                         placeholder="e.g., Starter Membership"
+                                        onBlur={(e) => {
+                                            // Auto-suggest plan_id based on plan_name
+                                            const planName = e.target.value;
+                                            if (planName) {
+                                                const suggestedPlanId = generatePlanId(planName);
+                                                console.log('Suggested Plan ID:', suggestedPlanId);
+                                            }
+                                        }}
                                     />
+                                    <small style={{color: '#6b7280', fontSize: '12px'}}>
+                                        Plan ID will be generated automatically
+                                    </small>
                                 </div>
                             </div>
                             <div className="form-row">
@@ -296,6 +332,7 @@ const PaymentsDetailPage = () => {
                             <th>User</th>
                             <th>Amount</th>
                             <th>Plan</th>
+                            <th>Plan ID</th>
                             <th>Status</th>
                             <th>Payment Method</th>
                             <th>Date</th>
@@ -314,6 +351,11 @@ const PaymentsDetailPage = () => {
                                 </td>
                                 <td data-label="Amount">₹{payment.amount}</td>
                                 <td data-label="Plan">{payment.plan_name || 'N/A'}</td>
+                                <td data-label="Plan ID">
+                                    <code style={{ fontSize: '11px', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>
+                                        {payment.plan_id || 'N/A'}
+                                    </code>
+                                </td>
                                 <td data-label="Status">
                                     <span className={`status-badge ${payment.payment_status}`}>
                                         {payment.payment_status}
