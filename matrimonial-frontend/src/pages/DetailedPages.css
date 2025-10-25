@@ -513,3 +513,125 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Membership Badges */
+.badge.starter {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.badge.essential {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+}
+
+.badge.popular {
+    background: #fef7cd;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.badge.premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+/* Features Tooltip */
+.features-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.features-info {
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.features-content {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    z-index: 1000;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.features-tooltip:hover .features-content {
+    display: block;
+}
+
+.features-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: white;
+}
+
+/* Dropdown improvements for membership */
+.dropdown-content .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: left;
+    width: 100%;
+}
+
+.dropdown-content .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content .dropdown-item.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+/* Loading state for action buttons */
+.action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Plan feature lists */
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.feature-list li {
+    padding: 2px 0;
+    font-size: 11px;
+}
+
+.feature-list li:before {
+    content: '• ';
+    color: #10B981;
+    font-weight: bold;
+}
