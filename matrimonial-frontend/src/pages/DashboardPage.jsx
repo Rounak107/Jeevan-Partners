@@ -215,54 +215,69 @@ const OverviewTab = ({ stats }) => {
                 />
             </div>
 
-            {/* Detailed Stats */}
-            <div className="detailed-stats">
-                <div className="stat-section">
-                    <h3>User Analytics</h3>
-                    <div className="stat-list">
-                        <div className="stat-item">
-                            <span>Users with Profile:</span>
-                            <strong>{stats.users.with_profile}</strong>
+            {/* Detailed Stats in Beautiful Boxes */}
+            <div className="analytics-grid">
+                {/* User Analytics Box */}
+                <div className="analytics-box">
+                    <div className="analytics-header">
+                        <h3>👥 User Analytics</h3>
+                    </div>
+                    <div className="analytics-content">
+                        <div className="stat-item-box">
+                            <span className="stat-label">Users with Profile:</span>
+                            <span className="stat-value">{stats.users.with_profile}</span>
                         </div>
-                        <div className="stat-item">
-                            <span>Users without Profile:</span>
-                            <strong>{stats.users.without_profile}</strong>
+                        <div className="stat-item-box">
+                            <span className="stat-label">Users without Profile:</span>
+                            <span className="stat-value">{stats.users.without_profile}</span>
                         </div>
-                        <div className="stat-item">
-                            <span>New Users (7 days):</span>
-                            <strong>{stats.users.recent}</strong>
+                        <div className="stat-item-box">
+                            <span className="stat-label">New Users (7 days):</span>
+                            <span className="stat-value highlight">{stats.users.recent}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="stat-section">
-                    <h3>Payment Analytics</h3>
-                    <div className="stat-list">
-                        <div className="stat-item">
-                            <span>Successful Payments:</span>
-                            <strong>{stats.payments.successful}</strong>
+                {/* Payment Analytics Box - Only show if there are payments */}
+                {stats.payments.total > 0 && (
+                    <div className="analytics-box">
+                        <div className="analytics-header">
+                            <h3>💰 Payment Analytics</h3>
                         </div>
-                        <div className="stat-item">
-                            <span>Pending Payments:</span>
-                            <strong>{stats.payments.pending}</strong>
-                        </div>
-                        <div className="stat-item">
-                            <span>Total Transactions:</span>
-                            <strong>{stats.payments.total}</strong>
+                        <div className="analytics-content">
+                            <div className="stat-item-box">
+                                <span className="stat-label">Successful Payments:</span>
+                                <span className="stat-value success">{stats.payments.successful}</span>
+                            </div>
+                            <div className="stat-item-box">
+                                <span className="stat-label">Pending Payments:</span>
+                                <span className="stat-value warning">{stats.payments.pending}</span>
+                            </div>
+                            <div className="stat-item-box">
+                                <span className="stat-label">Total Transactions:</span>
+                                <span className="stat-value">{stats.payments.total}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                <div className="stat-section">
-                    <h3>Engagement Analytics</h3>
-                    <div className="stat-list">
-                        <div className="stat-item">
-                            <span>Recent Likes (7 days):</span>
-                            <strong>{stats.engagement.recent_likes}</strong>
+                {/* Engagement Analytics Box */}
+                <div className="analytics-box">
+                    <div className="analytics-header">
+                        <h3>🔥 Engagement Analytics</h3>
+                    </div>
+                    <div className="analytics-content">
+                        <div className="stat-item-box">
+                            <span className="stat-label">Recent Likes (7 days):</span>
+                            <span className="stat-value highlight">{stats.engagement.recent_likes}</span>
                         </div>
-                        <div className="stat-item">
-                            <span>Recent Messages (7 days):</span>
-                            <strong>{stats.engagement.recent_messages}</strong>
+                        <div className="stat-item-box">
+                            <span className="stat-label">Recent Messages (7 days):</span>
+                            <span className="stat-value highlight">{stats.engagement.recent_messages}</span>
+                        </div>
+                        <div className="stat-item-box">
+                            <span className="stat-label">Total Conversations:</span>
+                            <span className="stat-value">{stats.engagement.total_conversations}</span>
                         </div>
                     </div>
                 </div>
@@ -379,57 +394,94 @@ const ActivityTab = ({ activity }) => {
                     View All Activity →
                 </a>
             </div>
-            <div className="activity-columns">
-                {/* Recent Likes */}
-                <div className="activity-column">
-                    <h4>Recent Likes ❤️</h4>
-                    <div className="activity-list">
-                        {activity.recent_likes?.map(like => (
-                            <div key={like.id} className="activity-item">
-                                <div className="activity-content">
-                                    <strong>{like.sender?.name}</strong> liked 
-                                    <strong>{like.profile?.user?.name}'s</strong> profile
+            
+            <div className="activity-cards-grid">
+                {/* Recent Likes Card */}
+                <div className="activity-card">
+                    <div className="activity-card-header">
+                        <h4>❤️ Recent Likes</h4>
+                        <span className="activity-count">{activity.recent_likes?.length || 0}</span>
+                    </div>
+                    <div className="activity-card-content">
+                        {activity.recent_likes?.length > 0 ? (
+                            activity.recent_likes.map(like => (
+                                <div key={like.id} className="activity-item-card">
+                                    <div className="activity-avatar">
+                                        {like.sender?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <div className="activity-details">
+                                        <p className="activity-text">
+                                            <strong>{like.sender?.name}</strong> liked{" "}
+                                            <strong>{like.profile?.user?.name}'s</strong> profile
+                                        </p>
+                                        <span className="activity-time">
+                                            {new Date(like.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="activity-time">
-                                    {new Date(like.created_at).toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <div className="no-activity">No recent likes</div>
+                        )}
                     </div>
                 </div>
 
-                {/* Recent Messages */}
-                <div className="activity-column">
-                    <h4>Recent Messages 💬</h4>
-                    <div className="activity-list">
-                        {activity.recent_messages?.map(message => (
-                            <div key={message.id} className="activity-item">
-                                <div className="activity-content">
-                                    <strong>{message.sender?.name}:</strong> 
-                                    {message.body?.substring(0, 50)}...
+                {/* Recent Messages Card */}
+                <div className="activity-card">
+                    <div className="activity-card-header">
+                        <h4>💬 Recent Messages</h4>
+                        <span className="activity-count">{activity.recent_messages?.length || 0}</span>
+                    </div>
+                    <div className="activity-card-content">
+                        {activity.recent_messages?.length > 0 ? (
+                            activity.recent_messages.map(message => (
+                                <div key={message.id} className="activity-item-card">
+                                    <div className="activity-avatar">
+                                        {message.sender?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <div className="activity-details">
+                                        <p className="activity-text">
+                                            <strong>{message.sender?.name}:</strong>{" "}
+                                            {message.body?.substring(0, 50)}...
+                                        </p>
+                                        <span className="activity-time">
+                                            {new Date(message.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="activity-time">
-                                    {new Date(message.created_at).toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <div className="no-activity">No recent messages</div>
+                        )}
                     </div>
                 </div>
 
-                {/* Recent Users */}
-                <div className="activity-column">
-                    <h4>Recent Users 👥</h4>
-                    <div className="activity-list">
-                        {activity.recent_users?.map(user => (
-                            <div key={user.id} className="activity-item">
-                                <div className="activity-content">
-                                    <strong>{user.name}</strong> joined
+                {/* Recent Users Card */}
+                <div className="activity-card">
+                    <div className="activity-card-header">
+                        <h4>👥 Recent Users</h4>
+                        <span className="activity-count">{activity.recent_users?.length || 0}</span>
+                    </div>
+                    <div className="activity-card-content">
+                        {activity.recent_users?.length > 0 ? (
+                            activity.recent_users.map(user => (
+                                <div key={user.id} className="activity-item-card">
+                                    <div className="activity-avatar">
+                                        {user.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <div className="activity-details">
+                                        <p className="activity-text">
+                                            <strong>{user.name}</strong> joined
+                                        </p>
+                                        <span className="activity-time">
+                                            {new Date(user.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="activity-time">
-                                    {new Date(user.created_at).toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <div className="no-activity">No recent users</div>
+                        )}
                     </div>
                 </div>
             </div>

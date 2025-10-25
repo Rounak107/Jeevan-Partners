@@ -28,6 +28,29 @@ const PaymentsDetailPage = () => {
         }
     };
 
+    const updatePaymentStatus = async (paymentId, newStatus) => {
+        try {
+            const response = await API.put(`/dashboard/payments/${paymentId}/status`, {
+                status: newStatus
+            });
+
+            if (response.data.success) {
+                // Update the local state
+                setPayments(prevPayments => 
+                    prevPayments.map(payment => 
+                        payment.id === paymentId 
+                            ? { ...payment, payment_status: newStatus }
+                            : payment
+                    )
+                );
+                alert('Payment status updated successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to update payment status:', error);
+            alert('Failed to update payment status');
+        }
+    };
+
     if (loading) {
         return (
             <div className="detailed-page">
@@ -80,8 +103,23 @@ const PaymentsDetailPage = () => {
                                 <td data-label="Payment Method">{payment.payment_method || 'N/A'}</td>
                                 <td data-label="Date">{new Date(payment.created_at).toLocaleString()}</td>
                                 <td data-label="Actions">
-                                    <button className="action-btn view">View</button>
-                                    <button className="action-btn edit">Edit</button>
+                                    <div className="dropdown">
+                                        <button className="action-btn edit">Edit Status</button>
+                                        <div className="dropdown-content">
+                                            <button 
+                                                onClick={() => updatePaymentStatus(payment.id, 'pending')}
+                                                className={payment.payment_status === 'pending' ? 'active' : ''}
+                                            >
+                                                Pending
+                                            </button>
+                                            <button 
+                                                onClick={() => updatePaymentStatus(payment.id, 'completed')}
+                                                className={payment.payment_status === 'completed' ? 'active' : ''}
+                                            >
+                                                Completed
+                                            </button>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
