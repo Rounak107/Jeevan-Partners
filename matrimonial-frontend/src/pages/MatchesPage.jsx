@@ -4,6 +4,7 @@ import ProfileCard from "../components/ProfileCard";
 import FilterPanel from "../components/FilterPanel";
 import CreateProfileModal from "../components/CreateProfileModal";
 import { useNavigate } from "react-router-dom";
+import { getUserFeatureAccess } from "../utils/featureAccess"; // ADD THIS IMPORT
 
 export default function MatchesPage() {
   const [profiles, setProfiles] = useState([]);
@@ -20,8 +21,26 @@ export default function MatchesPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [userLikes, setUserLikes] = useState([]);
   const [meta, setMeta] = useState({});
+  const [currentUser, setCurrentUser] = useState(null); // ADD THIS
   const navigate = useNavigate();
 
+  // ADD THIS: Get current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await API.get('/api/user');
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // ADD THIS: Get feature access
+  const features = getUserFeatureAccess(currentUser?.membership_plan);
+
+  // Rest of your existing code remains the same...
   const checkProfile = async () => {
     try {
       const response = await API.get("/api/profile");
@@ -120,7 +139,13 @@ export default function MatchesPage() {
     });
   };
 
-  const startConversation = async (userId) => {
+   const startConversation = async (userId) => {
+    // ADD FEATURE CHECK
+    if (!features.messaging) {
+      alert('🔒 Messaging is not available in your current plan. Please upgrade to Essential plan or higher.');
+      return;
+    }
+    
     try {
       const res = await API.post(`/api/conversations/${userId}`);
       navigate(`/messages/${res.data.id}`);
@@ -243,12 +268,19 @@ export default function MatchesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-rose-800">Find Your Match</h1>
 
-        <button
-          onClick={() => setShowPreview((v) => !v)}
-          className="bg-rose-700 text-white px-4 py-2 rounded hover:bg-rose-800"
-        >
-          {showPreview ? "Hide My Profile" : "Preview My Profile"}
-        </button>
+        {/* ADD FEATURE CHECK FOR PROFILE PREVIEW */}
+        {features.view_profiles ? (
+          <button
+            onClick={() => setShowPreview((v) => !v)}
+            className="bg-rose-700 text-white px-4 py-2 rounded hover:bg-rose-800"
+          >
+            {showPreview ? "Hide My Profile" : "Preview My Profile"}
+          </button>
+        ) : (
+          <div className="text-sm text-rose-600 bg-rose-100 px-3 py-2 rounded">
+            🔒 Upgrade to view profiles
+          </div>
+        )}
       </div>
 
       <FilterPanel

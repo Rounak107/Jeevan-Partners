@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// FIXED: Use v2 imports (remove /outline and /solid)
 import { 
   HeartIcon, 
   ChatBubbleLeftIcon, 
@@ -12,12 +11,30 @@ import {
 } from '@heroicons/react/24/solid';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
+import { getUserFeatureAccess } from '../utils/featureAccess'; // ADD THIS IMPORT
 
 export default function ProfileCard({ profile, onMessageClick, onLike, initialLiked = false }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // ADD THIS STATE
   const navigate = useNavigate();
+
+  // ADD THIS: Get current user and their feature access
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await API.get('/api/user');
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // ADD THIS: Get feature access for current user
+  const features = getUserFeatureAccess(currentUser?.membership_plan);
 
   // FIXED: Use profile ID for navigation, not user ID
   const getProfileId = () => {
@@ -57,6 +74,11 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
 
   // FIXED: Use profile ID for navigation
   const navigateToProfile = () => {
+    // ADD FEATURE CHECK: Only allow if user has view_profiles access
+    if (!features.view_profiles) {
+      alert('🔒 Viewing profiles is not available in your current plan. Please upgrade to Starter plan or higher.');
+      return;
+    }
     navigate(`/profile/${getProfileId()}`);
   };
 
@@ -88,6 +110,15 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     } finally {
       setLoading(false);
     }
+  };
+
+  // ADD THIS: Handle message click with feature check
+  const handleMessageClick = (userId) => {
+    if (!features.messaging) {
+      alert('🔒 Messaging is not available in your current plan. Please upgrade to Essential plan or higher.');
+      return;
+    }
+    onMessageClick(userId);
   };
 
   const nextImage = () => {
@@ -212,21 +243,58 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
 
         {/* Action Buttons */}
         <div className="flex space-x-2">
-          <button
-            onClick={() => onMessageClick(getUserId())}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors"
-          >
-            <ChatBubbleLeftIcon className="w-4 h-4" />
-            <span>Message</span>
-          </button>
-          <button
-            onClick={navigateToProfile}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors"
-          >
-            <UserIcon className="w-4 h-4" />
-            <span>Profile</span>
-          </button>
+          {/* Message Button - Only show for Essential, Popular, Premium */}
+          {features.messaging ? (
+            <button
+              onClick={() => handleMessageClick(getUserId())}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors"
+            >
+              <ChatBubbleLeftIcon className="w-4 h-4" />
+              <span>Message</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => alert('🔒 Upgrade to Essential plan to send messages')}
+              className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors cursor-not-allowed"
+              title="Upgrade to Essential plan to send messages"
+            >
+              <ChatBubbleLeftIcon className="w-4 h-4" />
+              <span>Message</span>
+            </button>
+          )}
+          
+          {/* Profile Button - Only show for Starter, Essential, Popular, Premium */}
+          {features.view_profiles ? (
+            <button
+              onClick={navigateToProfile}
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors"
+            >
+              <UserIcon className="w-4 h-4" />
+              <span>Profile</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => alert('🔒 Upgrade to Starter plan to view profiles')}
+              className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-1 transition-colors cursor-not-allowed"
+              title="Upgrade to Starter plan to view profiles"
+            >
+              <UserIcon className="w-4 h-4" />
+              <span>Profile</span>
+            </button>
+          )}
         </div>
+
+        {/* Upgrade Prompts */}
+        {!features.messaging && (
+          <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-600 rounded text-yellow-200 text-xs text-center">
+            🔒 Upgrade to <strong>Essential</strong> plan for messaging
+          </div>
+        )}
+        {!features.view_profiles && (
+          <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-600 rounded text-yellow-200 text-xs text-center">
+            🔒 Upgrade to <strong>Starter</strong> plan to view full profiles
+          </div>
+        )}
       </div>
     </div>
   );
