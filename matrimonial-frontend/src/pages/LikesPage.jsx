@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AstroAPI } from "../utils/astroAPI";
 import KundliModal from "../components/KundliModal";
 import { toggleCompatibility } from "../utils/aiCompatibility";
-import { hasFeatureAccess, FEATURES } from "../utils/featureAccess"; // Import feature access utilities
+import { hasFeatureAccess, FEATURES } from "../utils/featureAccess";
 
 const BASE_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace("/api", "")
@@ -30,7 +30,7 @@ export default function LikesPage() {
     loading: false
   });
 
-  // Feature access checks - REMOVED unused canAccessAICompanion
+  // Feature access checks
   const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
   const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
   
@@ -68,11 +68,6 @@ export default function LikesPage() {
   };
 
   const startConversation = async (userId) => {
-    if (!canMessage) {
-      alert("Upgrade to Essential plan or higher to send messages!");
-      return;
-    }
-    
     try {
       const res = await API.post(`/api/conversations/${userId}`);
       navigate(`/messages/${res.data.id}`);
@@ -83,11 +78,6 @@ export default function LikesPage() {
   };
 
   const analyzeCompatibility = (profile, user) => {
-    if (!isPremiumAssisted) {
-      alert("AI Compatibility is only available for Premium Assisted members!");
-      return;
-    }
-    
     if (!currentUser) {
       alert("Please complete your own profile first!");
       return;
@@ -112,11 +102,6 @@ export default function LikesPage() {
   };
 
   const generateDetailedKundli = async (profile) => {
-    if (!canAccessAIKundli) {
-      alert("Upgrade to Popular plan or higher to access AI Kundli features!");
-      return;
-    }
-
     if (!currentUser?.dob) {
       alert('Please complete your profile with birth date first!');
       return;
@@ -164,13 +149,7 @@ export default function LikesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-rose-800 mb-8">Profiles You Liked</h1>
 
-      {/* Feature Access Debug Info - Remove in production */}
-      <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
-        <div>Current Plan: <strong>{currentUser?.membership_plan || 'free'}</strong></div>
-        <div>Messaging: {canMessage ? '✅ Enabled' : '❌ Disabled'}</div>
-        <div>AI Kundli: {canAccessAIKundli ? '✅ Enabled' : '❌ Disabled'}</div>
-        <div>AI Compatibility: {isPremiumAssisted ? '✅ Enabled' : '❌ Disabled'}</div>
-      </div>
+      {/* REMOVED the debug info box */}
 
       {likes.length === 0 ? (
         <div className="text-center text-rose-400 py-12">
@@ -215,46 +194,38 @@ export default function LikesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  {/* Message Button - Essential+ plans */}
-                  <button
-                    onClick={() => startConversation(user.id || profile.user_id)}
-                    className={`w-full py-2 px-4 rounded-lg transition-colors ${
-                      canMessage 
-                        ? "bg-rose-700 text-white hover:bg-rose-800" 
-                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    }`}
-                    disabled={!canMessage}
-                  >
-                    {canMessage ? "Send Message" : "Upgrade to Message"}
-                  </button>
+                  {/* Message Button - Only show for Essential+ plans */}
+                  {canMessage && (
+                    <button
+                      onClick={() => startConversation(user.id || profile.user_id)}
+                      className="w-full bg-rose-700 text-white py-2 px-4 rounded-lg hover:bg-rose-800 transition-colors"
+                    >
+                      Send Message
+                    </button>
+                  )}
                   
-                  {/* AI Kundli Button - Popular+ plans */}
-                  <button
-                    onClick={() => generateDetailedKundli(profile)} 
-                    disabled={!canAccessAIKundli || kundliModal.loading}
-                    className={`w-full py-2 px-4 rounded-lg transition-all ${
-                      canAccessAIKundli
-                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    }`}
-                  >
-                    {kundliModal.loading ? '🔄 Analyzing...' : '🤖 AI Kundli Match'}
-                  </button>
+                  {/* AI Kundli Button - Only show for Popular+ plans */}
+                  {canAccessAIKundli && (
+                    <button
+                      onClick={() => generateDetailedKundli(profile)} 
+                      disabled={kundliModal.loading}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+                    >
+                      {kundliModal.loading ? '🔄 Analyzing...' : '🤖 AI Kundli Match'}
+                    </button>
+                  )}
 
-                  {/* Quick Compatibility Button - Premium Assisted only */}
-                  <button
-                    onClick={() => analyzeCompatibility(profile, user)}
-                    className={`w-full py-2 px-4 rounded-lg transition-colors ${
-                      isPremiumAssisted
-                        ? "bg-purple-600 text-white hover:bg-purple-700"
-                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    }`}
-                    disabled={!isPremiumAssisted}
-                  >
-                    🔮 Quick Compatibility
-                  </button>
+                  {/* Quick Compatibility Button - Only show for Premium Assisted */}
+                  {isPremiumAssisted && (
+                    <button
+                      onClick={() => analyzeCompatibility(profile, user)}
+                      className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      🔮 Quick Compatibility
+                    </button>
+                  )}
                   
-                  {/* View Profile Button - Available for all plans that can view profiles */}
+                  {/* View Profile Button - Always visible for all plans that can view profiles */}
                   <button
                     onClick={() => navigate(`/profile/${profile.id}`)}
                     className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors"
@@ -263,7 +234,7 @@ export default function LikesPage() {
                   </button>
                 </div>
 
-                {/* AI Response Display - Only show if user has access */}
+                {/* AI Response Display - Only show for Premium Assisted users */}
                 {isPremiumAssisted && aiResponses[profile.id] && (
                   <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
                     <div className="flex justify-between items-start mb-2">
