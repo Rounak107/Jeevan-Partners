@@ -10,7 +10,6 @@ const BASE_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace("/api", "") 
   : "https://www.couplemarriage.com";
 
-// Use the SAME image URL function as LikesPage
 const STORAGE_BASE = `${BASE_URL}/storage`;
 const normalizePath = (p) => String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
 const imgUrl = (p) => `${STORAGE_BASE}/${normalizePath(p)}`;
@@ -32,13 +31,13 @@ const AIKundliPage = () => {
       try {
         setLoading(true);
         
-        // Fetch current user - SAME AS LIKES PAGE
+        // Fetch current user with profile data - SAME AS LIKES PAGE
         const userResponse = await API.get('/api/user');
         const user = userResponse.data;
         setCurrentUser(user);
         setFeatures(getUserFeatureAccess(user.membership_plan));
 
-        // Fetch liked profiles - USE EXACTLY THE SAME APPROACH AS LIKES PAGE
+        // Fetch liked profiles - EXACTLY LIKE LIKES PAGE
         const likesResponse = await API.get('/api/me/likes');
         console.log('🔄 Raw likes API response:', likesResponse.data);
         
@@ -74,22 +73,31 @@ const AIKundliPage = () => {
     return `${day}-${month}-${year}`;
   };
 
-  // AI Kundli Match function - USE SAME LOGIC AS LIKES PAGE
-  const handleAIKundliMatch = async (profileData) => {
+  // AI Kundli Match function - EXACTLY LIKE LIKES PAGE
+  const handleAIKundliMatch = async (like) => {
     if (!features?.ai_kundli) {
       alert('🔒 AI Kundli Match is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
     }
 
+    // Extract data EXACTLY LIKE LIKES PAGE
+    const profile = like.profile || {};
+    
     if (!currentUser?.dob) {
       alert('Please complete your profile with birth date first!');
       return;
     }
 
-    setLoadingStates(prev => ({ ...prev, [profileData.id]: 'kundli' }));
+    if (!profile.dob) {
+      alert('This profile does not have a birth date set. Cannot generate kundli match.');
+      return;
+    }
+
+    const profileId = profile.id || like.id;
+    setLoadingStates(prev => ({ ...prev, [profileId]: 'kundli' }));
     
     try {
-      setSelectedProfile(profileData);
+      setSelectedProfile(profile);
       
       // USE EXACTLY THE SAME LOGIC AS LIKES PAGE
       const userBirthData = {
@@ -97,11 +105,15 @@ const AIKundliPage = () => {
       };
 
       const targetBirthData = {
-        date: formatDate(profileData.dob)
+        date: formatDate(profile.dob)
       };
 
-      console.log('User birth data for kundli:', userBirthData);
-      console.log('Profile birth data for kundli:', targetBirthData);
+      console.log('📅 Birth data for kundli:', {
+        userBirthData,
+        targetBirthData,
+        currentUserDob: currentUser.dob,
+        profileDob: profile.dob
+      });
 
       // Generate both kundlis using the SAME AstroAPI
       const userKundli = await AstroAPI.generateKundli(userBirthData);
@@ -120,12 +132,12 @@ const AIKundliPage = () => {
       console.error('Kundli generation failed:', error);
       alert('Failed to generate kundli analysis. Please try again.');
     } finally {
-      setLoadingStates(prev => ({ ...prev, [profileData.id]: null }));
+      setLoadingStates(prev => ({ ...prev, [profileId]: null }));
     }
   };
 
-  // Quick Compatibility function - USE SAME LOGIC AS LIKES PAGE
-  const handleQuickCompatibility = (profileData) => {
+  // Quick Compatibility function - EXACTLY LIKE LIKES PAGE
+  const handleQuickCompatibility = (like) => {
     if (!features?.ai_kundli) {
       alert('🔒 Quick Compatibility is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
@@ -135,23 +147,42 @@ const AIKundliPage = () => {
       alert("Please complete your own profile first!");
       return;
     }
+
+    // Extract data EXACTLY LIKE LIKES PAGE
+    const profile = like.profile || {};
+    const user = like.user || profile.user || {};
+
+    console.log('⚡ Quick Compatibility Data:', {
+      currentUserDob: currentUser.dob,
+      profileDob: profile.dob,
+      profile: profile,
+      user: user
+    });
+
+    if (!currentUser.dob || !profile.dob) {
+      if (!currentUser.dob) {
+        alert('Please add your birth date in your profile for compatibility analysis.');
+      } else {
+        alert('This profile does not have a birth date set. Cannot analyze compatibility.');
+      }
+      return;
+    }
     
-    // Extract profile and user data EXACTLY LIKE LIKES PAGE
-    const profile = profileData.profile || profileData;
-    const user = profileData.user || profile.user || {};
-    
-    // Combine profile and user data EXACTLY LIKE LIKES PAGE
+    // USE EXACTLY THE SAME LOGIC AS LIKES PAGE
     const targetUserData = {
       ...profile,
       name: user?.name || "Unknown",
-      dob: profile?.dob || user?.dob
+      dob: profile.dob
     };
-    
-    console.log('Current user for compatibility:', currentUser);
-    console.log('Target user for compatibility:', targetUserData);
+
+    console.log('👥 Compatibility analysis:', {
+      currentUser: { name: currentUser.name, dob: currentUser.dob },
+      targetUser: targetUserData
+    });
     
     // Use the SAME toggleCompatibility function
-    toggleCompatibility(profile.id, aiResponses, setAiResponses, currentUser, targetUserData);
+    const profileId = profile.id || like.id;
+    toggleCompatibility(profileId, aiResponses, setAiResponses, currentUser, targetUserData);
   };
 
   if (loading) {
@@ -206,7 +237,16 @@ const AIKundliPage = () => {
                 const avatar = profile.profile_photo ? imgUrl(profile.profile_photo) : null;
                 const profileId = profile.id || like.profile_id || like.id || idx;
 
-                console.log(`Profile ${profileId} data:`, { profile, user, avatar });
+                const userDob = currentUser?.dob;
+                const profileDob = profile.dob;
+                const canAnalyze = userDob && profileDob;
+
+                console.log(`👤 Profile ${profileId}:`, {
+                  userName: user.name,
+                  profileDob: profileDob,
+                  userDob: userDob,
+                  canAnalyze: canAnalyze
+                });
 
                 return (
                   <div
@@ -214,7 +254,6 @@ const AIKundliPage = () => {
                     className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
                   >
                     
-                    {/* Profile Header - SAME STYLING AS LIKES PAGE */}
                     <div className="p-6">
                       <div className="text-center mb-4">
                         <div className="w-24 h-24 bg-rose-100 border border-rose-300 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
@@ -239,12 +278,13 @@ const AIKundliPage = () => {
                           {profile.age && profile.city ? " • " : ""}
                           {profile.city || ""}
                         </p>
+                        
                         {/* Debug info */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            DOB: {profile.dob || user.dob || 'Not available'}
-                          </div>
-                        )}
+                        <div className="text-xs text-gray-500 mt-2 space-y-1">
+                          <div>Your DOB: {userDob ? '✅ Available' : '❌ Missing'}</div>
+                          <div>Profile DOB: {profileDob ? '✅ Available' : '❌ Missing'}</div>
+                          {profileDob && <div>Profile DOB: {profileDob}</div>}
+                        </div>
                       </div>
 
                       {/* Profile Details */}
@@ -270,10 +310,10 @@ const AIKundliPage = () => {
                       <div className="space-y-2">
                         {/* AI Kundli Match Button */}
                         <button
-                          onClick={() => handleAIKundliMatch(profile)}
-                          disabled={!features?.ai_kundli || loadingStates[profileId] === 'kundli' || !currentUser?.dob}
+                          onClick={() => handleAIKundliMatch(like)}
+                          disabled={!features?.ai_kundli || loadingStates[profileId] === 'kundli' || !canAnalyze}
                           className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                            features?.ai_kundli && currentUser?.dob
+                            features?.ai_kundli && canAnalyze
                               ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
                           } ${loadingStates[profileId] === 'kundli' ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -294,9 +334,9 @@ const AIKundliPage = () => {
                         {/* Quick Compatibility Button */}
                         <button
                           onClick={() => handleQuickCompatibility(like)}
-                          disabled={!features?.ai_kundli}
+                          disabled={!features?.ai_kundli || !canAnalyze}
                           className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                            features?.ai_kundli
+                            features?.ai_kundli && canAnalyze
                               ? 'bg-purple-600 hover:bg-purple-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
                           }`}
@@ -308,10 +348,15 @@ const AIKundliPage = () => {
                         </button>
                       </div>
 
-                      {/* Data Warning */}
-                      {!currentUser?.dob && (
+                      {/* Data Warnings */}
+                      {!canAnalyze && (
                         <div className="mt-3 p-2 bg-yellow-900 border border-yellow-600 rounded text-yellow-200 text-xs">
-                          Add your birth date in your profile for compatibility analysis
+                          {!userDob && !profileDob 
+                            ? 'Add birth dates to both profiles for analysis'
+                            : !userDob 
+                            ? 'Add your birth date in your profile'
+                            : 'Profile birth date missing'
+                          }
                         </div>
                       )}
 
@@ -352,7 +397,6 @@ const AIKundliPage = () => {
             </div>
           </div>
         ) : (
-          /* No Profiles Message */
           <div className="max-w-2xl mx-auto text-center bg-gray-800 rounded-2xl p-8">
             <div className="text-6xl mb-4">💫</div>
             <h3 className="text-2xl font-bold text-rose-600 mb-4">No Liked Profiles Yet</h3>
