@@ -4,7 +4,16 @@ import API from '../api';
 import { getUserFeatureAccess } from '../utils/featureAccess';
 import KundliModal from '../components/KundliModal';
 import { AstroAPI } from '../utils/astroAPI';
-import { generateCompatibilitySummary } from '../utils/aiCompatibility';
+import { generateCompatibilitySummary, toggleCompatibility } from '../utils/aiCompatibility';
+
+const BASE_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace("/api", "") 
+  : "https://www.couplemarriage.com";
+
+// Use the SAME image URL function as LikesPage
+const STORAGE_BASE = `${BASE_URL}/storage`;
+const normalizePath = (p) => String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
+const imgUrl = (p) => `${STORAGE_BASE}/${normalizePath(p)}`;
 
 const AIKundliPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -23,44 +32,28 @@ const AIKundliPage = () => {
       try {
         setLoading(true);
         
-        // Fetch current user with profile data
+        // Fetch current user - SAME AS LIKES PAGE
         const userResponse = await API.get('/api/user');
         const user = userResponse.data;
         setCurrentUser(user);
         setFeatures(getUserFeatureAccess(user.membership_plan));
 
-        // Fetch liked profiles with detailed profile information
+        // Fetch liked profiles - USE EXACTLY THE SAME APPROACH AS LIKES PAGE
         const likesResponse = await API.get('/api/me/likes');
-        let profiles = likesResponse.data.data || likesResponse.data || [];
+        console.log('🔄 Raw likes API response:', likesResponse.data);
         
-        // Fetch detailed profile data for each liked profile to get DOB
-        const profilesWithDetails = await Promise.all(
-          profiles.map(async (profile) => {
-            try {
-              const profileId = profile.id || profile.user_id || (profile.user && profile.user.id);
-              if (profileId) {
-                const profileDetailResponse = await API.get(`/api/profiles/${profileId}`);
-                return {
-                  ...profile,
-                  ...profileDetailResponse.data,
-                  // Ensure we have the user data with DOB
-                  user: {
-                    ...profile.user,
-                    ...profileDetailResponse.data.user,
-                    dob: profileDetailResponse.data.dob || profileDetailResponse.data.user?.dob
-                  },
-                  dob: profileDetailResponse.data.dob || profile.dob
-                };
-              }
-              return profile;
-            } catch (error) {
-              console.error(`Error fetching profile ${profile.id}:`, error);
-              return profile;
-            }
-          })
-        );
-
-        setLikedProfiles(profilesWithDetails);
+        let profiles = [];
+        
+        if (Array.isArray(likesResponse.data)) {
+          profiles = likesResponse.data;
+        } else if (likesResponse.data.data && Array.isArray(likesResponse.data.data)) {
+          profiles = likesResponse.data.data;
+        } else if (likesResponse.data.likes) {
+          profiles = likesResponse.data.likes;
+        }
+        
+        console.log('📊 Extracted profiles for AI Kundli:', profiles);
+        setLikedProfiles(profiles);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -71,143 +64,94 @@ const AIKundliPage = () => {
     fetchData();
   }, []);
 
-  // Get proper birth date from profile - SAME AS LIKES PAGE
-  const getProfileBirthDate = (profile) => {
-    // Try multiple possible locations for DOB
-    return profile.dob || 
-           profile.user?.dob || 
-           profile.birth_date || 
-           profile.user?.birth_date ||
-           '2000-01-01'; // Fallback
+  // Use the SAME formatDate function as LikesPage
+  const formatDate = (dateString) => {
+    if (!dateString) return '01-01-2000';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
-  // AI Kundli Match function - FIXED TO USE ACTUAL PROFILE DATA
-  const handleAIKundliMatch = async (profile) => {
+  // AI Kundli Match function - USE SAME LOGIC AS LIKES PAGE
+  const handleAIKundliMatch = async (profileData) => {
     if (!features?.ai_kundli) {
       alert('🔒 AI Kundli Match is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
     }
 
-    setLoadingStates(prev => ({ ...prev, [profile.id]: 'kundli' }));
+    if (!currentUser?.dob) {
+      alert('Please complete your profile with birth date first!');
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, [profileData.id]: 'kundli' }));
     
     try {
-      setSelectedProfile(profile);
+      setSelectedProfile(profileData);
       
-      // Get actual birth data from current user profile
+      // USE EXACTLY THE SAME LOGIC AS LIKES PAGE
       const userBirthData = {
-        date: currentUser.dob || getProfileBirthDate(currentUser),
-        time: '10:00:00',
-        latitude: currentUser.latitude || '28.6139',
-        longitude: currentUser.longitude || '77.2090'
+        date: formatDate(currentUser.dob)
       };
 
-      // Get actual birth data from liked profile
-      const profileBirthData = {
-        date: getProfileBirthDate(profile),
-        time: '10:00:00',
-        latitude: profile.latitude || '28.6139',
-        longitude: profile.longitude || '77.2090'
+      const targetBirthData = {
+        date: formatDate(profileData.dob)
       };
 
-      console.log('User birth data:', userBirthData);
-      console.log('Profile birth data:', profileBirthData);
+      console.log('User birth data for kundli:', userBirthData);
+      console.log('Profile birth data for kundli:', targetBirthData);
 
-      // Generate kundli for both users using actual birth data
-      const [userKundli, profileKundli] = await Promise.all([
-        AstroAPI.generateKundli(userBirthData),
-        AstroAPI.generateKundli(profileBirthData)
-      ]);
+      // Generate both kundlis using the SAME AstroAPI
+      const userKundli = await AstroAPI.generateKundli(userBirthData);
+      const targetKundli = await AstroAPI.generateKundli(targetBirthData);
 
-      // Calculate compatibility using actual kundli data
-      const matchingData = AstroAPI.calculateAshtakoota(userKundli, profileKundli);
+      // Calculate matching using the SAME function
+      const matchingData = AstroAPI.calculateAshtakoota(userKundli, targetKundli);
 
       setKundliData({
         userKundli,
-        profileKundli,
-        matching: matchingData
+        targetKundli,
+        matchingData
       });
       setShowKundliModal(true);
     } catch (error) {
-      console.error('Error generating kundli match:', error);
-      alert('Failed to generate kundli match. Please try again.');
+      console.error('Kundli generation failed:', error);
+      alert('Failed to generate kundli analysis. Please try again.');
     } finally {
-      setLoadingStates(prev => ({ ...prev, [profile.id]: null }));
+      setLoadingStates(prev => ({ ...prev, [profileData.id]: null }));
     }
   };
 
-  // Quick Compatibility function - FIXED TO USE ACTUAL PROFILE DATA
-  const handleQuickCompatibility = async (profile) => {
+  // Quick Compatibility function - USE SAME LOGIC AS LIKES PAGE
+  const handleQuickCompatibility = (profileData) => {
     if (!features?.ai_kundli) {
       alert('🔒 Quick Compatibility is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
     }
-
-    setLoadingStates(prev => ({ ...prev, [profile.id]: 'compatibility' }));
     
-    try {
-      // Use actual profile data with proper DOB
-      const profileWithDob = {
-        ...profile,
-        name: profile.user?.name || profile.name,
-        dob: getProfileBirthDate(profile)
-      };
-
-      const currentUserWithDob = {
-        ...currentUser,
-        dob: currentUser.dob || getProfileBirthDate(currentUser)
-      };
-
-      console.log('Current user for compatibility:', currentUserWithDob);
-      console.log('Profile for compatibility:', profileWithDob);
-
-      const analysis = generateCompatibilitySummary(currentUserWithDob, profileWithDob);
-      
-      // Toggle display same as likes page
-      setAiResponses(prev => ({
-        ...prev,
-        [profile.id]: prev[profile.id] ? null : analysis
-      }));
-    } catch (error) {
-      console.error('Error in quick compatibility:', error);
-      alert('Failed to generate quick compatibility. Please try again.');
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [profile.id]: null }));
-    }
-  };
-
-  // FIXED: Profile image URL construction
-  const getProfileImage = (profile) => {
-    const BASE_URL = import.meta.env.VITE_API_URL 
-      ? import.meta.env.VITE_API_URL.replace("/api", "") 
-      : "https://www.couplemarriage.com";
-    
-    // Try multiple possible image paths
-    const imagePath = profile.profile_photo || 
-                     profile.profile_picture || 
-                     profile.user?.profile_photo ||
-                     profile.user?.profile_picture ||
-                     profile.photo;
-    
-    if (imagePath) {
-      // Clean the path and construct URL
-      const cleanPath = String(imagePath).replace(/\\/g, "/").replace(/^\/+/, "");
-      return `${BASE_URL}/storage/${cleanPath}`;
+    if (!currentUser) {
+      alert("Please complete your own profile first!");
+      return;
     }
     
-    // Fallback to default avatar
-    return '/default-avatar.png';
-  };
-
-  // Debug function to check profile data
-  const debugProfileData = (profile) => {
-    console.log('Profile data:', {
-      id: profile.id,
-      name: profile.user?.name || profile.name,
-      dob: getProfileBirthDate(profile),
-      image: getProfileImage(profile),
-      hasUser: !!profile.user,
-      rawData: profile
-    });
+    // Extract profile and user data EXACTLY LIKE LIKES PAGE
+    const profile = profileData.profile || profileData;
+    const user = profileData.user || profile.user || {};
+    
+    // Combine profile and user data EXACTLY LIKE LIKES PAGE
+    const targetUserData = {
+      ...profile,
+      name: user?.name || "Unknown",
+      dob: profile?.dob || user?.dob
+    };
+    
+    console.log('Current user for compatibility:', currentUser);
+    console.log('Target user for compatibility:', targetUserData);
+    
+    // Use the SAME toggleCompatibility function
+    toggleCompatibility(profile.id, aiResponses, setAiResponses, currentUser, targetUserData);
   };
 
   if (loading) {
@@ -255,41 +199,52 @@ const AIKundliPage = () => {
         {likedProfiles.length > 0 ? (
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {likedProfiles.map((profile) => {
-                // Debug on render
-                if (process.env.NODE_ENV === 'development') {
-                  debugProfileData(profile);
-                }
-                
+              {likedProfiles.map((like, idx) => {
+                // EXTRACT DATA EXACTLY LIKE LIKES PAGE
+                const profile = like.profile || like;
+                const user = like.user || profile.user || {};
+                const avatar = profile.profile_photo ? imgUrl(profile.profile_photo) : null;
+                const profileId = profile.id || like.profile_id || like.id || idx;
+
+                console.log(`Profile ${profileId} data:`, { profile, user, avatar });
+
                 return (
-                  <div key={profile.id || profile.user_id} className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
+                  <div
+                    key={profileId}
+                    className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+                  >
                     
-                    {/* Profile Header */}
+                    {/* Profile Header - SAME STYLING AS LIKES PAGE */}
                     <div className="p-6">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <img
-                          src={getProfileImage(profile)}
-                          alt={profile.user?.name || profile.name}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-rose-600"
-                          onError={(e) => {
-                            e.target.src = '/default-avatar.png';
-                          }}
-                        />
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-white">
-                            {profile.user?.name || profile.name}
-                          </h3>
-                          <div className="text-gray-300 text-sm">
-                            {profile.age && `${profile.age} years`} 
-                            {profile.city && ` • ${profile.city}`}
-                          </div>
-                          {/* Debug info - shows DOB availability */}
-                          {process.env.NODE_ENV === 'development' && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              DOB: {getProfileBirthDate(profile) || 'Not available'}
-                            </div>
+                      <div className="text-center mb-4">
+                        <div className="w-24 h-24 bg-rose-100 border border-rose-300 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                          {avatar ? (
+                            <img
+                              src={avatar}
+                              alt={user.name || "Profile photo"}
+                              className="w-full h-full object-cover rounded-full"
+                              onError={(e) => {
+                                e.target.src = '/default-avatar.png';
+                              }}
+                            />
+                          ) : (
+                            <span className="text-3xl text-rose-500">👤</span>
                           )}
                         </div>
+                        <h3 className="text-xl font-semibold text-white">
+                          {user.name || "Unknown"}
+                        </h3>
+                        <p className="text-gray-300">
+                          {profile.age ? `${profile.age} yrs` : ""}
+                          {profile.age && profile.city ? " • " : ""}
+                          {profile.city || ""}
+                        </p>
+                        {/* Debug info */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            DOB: {profile.dob || user.dob || 'Not available'}
+                          </div>
+                        )}
                       </div>
 
                       {/* Profile Details */}
@@ -311,26 +266,26 @@ const AIKundliPage = () => {
                         )}
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-1 gap-3">
+                      {/* Action Buttons - SAME AS LIKES PAGE BUT WITHOUT MESSAGE BUTTON */}
+                      <div className="space-y-2">
                         {/* AI Kundli Match Button */}
                         <button
                           onClick={() => handleAIKundliMatch(profile)}
-                          disabled={!features?.ai_kundli || loadingStates[profile.id] === 'kundli'}
-                          className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                            features?.ai_kundli
-                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 cursor-pointer'
+                          disabled={!features?.ai_kundli || loadingStates[profileId] === 'kundli' || !currentUser?.dob}
+                          className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+                            features?.ai_kundli && currentUser?.dob
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
-                          } ${loadingStates[profile.id] === 'kundli' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          } ${loadingStates[profileId] === 'kundli' ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          {loadingStates[profile.id] === 'kundli' ? (
+                          {loadingStates[profileId] === 'kundli' ? (
                             <>
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                               <span>Analyzing...</span>
                             </>
                           ) : (
                             <>
-                              <span>🌌</span>
+                              <span>🤖</span>
                               <span>AI Kundli Match</span>
                             </>
                           )}
@@ -338,54 +293,53 @@ const AIKundliPage = () => {
 
                         {/* Quick Compatibility Button */}
                         <button
-                          onClick={() => handleQuickCompatibility(profile)}
-                          disabled={!features?.ai_kundli || loadingStates[profile.id] === 'compatibility'}
-                          className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+                          onClick={() => handleQuickCompatibility(like)}
+                          disabled={!features?.ai_kundli}
+                          className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
                             features?.ai_kundli
-                              ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 cursor-pointer'
+                              ? 'bg-purple-600 hover:bg-purple-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
-                          } ${loadingStates[profile.id] === 'compatibility' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          }`}
                         >
-                          {loadingStates[profile.id] === 'compatibility' ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              <span>Analyzing...</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>⚡</span>
-                              <span>
-                                {aiResponses[profile.id] ? 'Hide Compatibility' : 'Quick Compatibility'}
-                              </span>
-                            </>
-                          )}
+                          <span>🔮</span>
+                          <span>
+                            {aiResponses[profileId] ? 'Hide Compatibility' : 'Quick Compatibility'}
+                          </span>
                         </button>
                       </div>
 
-                      {/* Quick Compatibility Result */}
-                      {aiResponses[profile.id] && (
-                        <div className="mt-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
+                      {/* Data Warning */}
+                      {!currentUser?.dob && (
+                        <div className="mt-3 p-2 bg-yellow-900 border border-yellow-600 rounded text-yellow-200 text-xs">
+                          Add your birth date in your profile for compatibility analysis
+                        </div>
+                      )}
+
+                      {/* Quick Compatibility Result - SAME AS LIKES PAGE */}
+                      {aiResponses[profileId] && (
+                        <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-bold text-rose-400 text-sm">⚡ Quick Compatibility</h4>
+                            <h4 className="font-semibold text-purple-700">🤖 Quick Compatibility</h4>
                             <button 
-                              onClick={() => setAiResponses(prev => ({ ...prev, [profile.id]: null }))}
-                              className="text-gray-400 hover:text-white text-lg"
+                              onClick={() => handleQuickCompatibility(like)}
+                              className="text-gray-500 hover:text-gray-700 text-lg"
                             >
                               ×
                             </button>
                           </div>
-                          <div className="bg-gray-900 rounded p-3">
-                            <pre className="whitespace-pre-wrap text-xs text-gray-300">
-                              {aiResponses[profile.id].text}
-                            </pre>
+                          <div className="whitespace-pre-line text-sm leading-relaxed">
+                            {typeof aiResponses[profileId] === 'string' 
+                              ? aiResponses[profileId] 
+                              : aiResponses[profileId].text
+                            }
                           </div>
-                          {aiResponses[profile.id].score > 0 && (
-                            <div className="mt-2 text-center">
-                              <div className="text-lg font-bold text-rose-500">
-                                {aiResponses[profile.id].score}% Match
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {aiResponses[profile.id].level} Compatibility
+                          {aiResponses[profileId] && aiResponses[profileId].score > 0 && (
+                            <div className="mt-3 pt-3 border-t border-blue-200">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="text-gray-600">Zodiac Match:</span>
+                                <span className="font-semibold text-purple-600">
+                                  {aiResponses[profileId].zodiac1} + {aiResponses[profileId].zodiac2}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -439,8 +393,8 @@ const AIKundliPage = () => {
           setSelectedProfile(null);
         }}
         userKundli={kundliData?.userKundli}
-        targetKundli={kundliData?.profileKundli}
-        matchingData={kundliData?.matching}
+        targetKundli={kundliData?.targetKundli}
+        matchingData={kundliData?.matchingData}
       />
     </div>
   );
