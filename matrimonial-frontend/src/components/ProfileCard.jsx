@@ -75,7 +75,7 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
   };
 
   const handleLike = async () => {
-    // ADD FEATURE CHECK FOR LIKES - Only Free plan cannot like
+    // FRONTEND FEATURE CHECK FOR LIKES - Only Free plan cannot like
     if (!features.likes) {
         alert('🔒 Liking profiles is not available in your Free plan. Please upgrade to Starter plan or higher to like profiles.');
         return;
@@ -100,9 +100,8 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
         }
     } catch (error) {
         console.error('Error toggling like:', error);
-        if (error.response?.status === 403) {
-            alert('🔒 This feature is not available in your current plan. Please upgrade to like profiles.');
-        } else if (error.response) {
+        // Remove the 403 check since backend might not be restricting properly
+        if (error.response) {
             alert(`Failed to like profile: ${error.response.data.message || 'Server error'}`);
         } else {
             alert('Failed to like profile. Please check your connection.');
