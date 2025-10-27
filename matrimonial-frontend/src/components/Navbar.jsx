@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isLoggedIn, logout } from "../auth";
 import { MessageSquare, Heart, Users, User, Crown, LogOut, Menu, X, Sparkles } from "lucide-react";
 import API from "../api";
+import { getUserFeatureAccess } from "../utils/featureAccess";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+   const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -25,6 +27,25 @@ export default function Navbar() {
     navigate("/login");
     setIsMenuOpen(false);
   };
+
+// ADD THIS: Get current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (isLoggedIn()) {
+        try {
+          const response = await API.get('/api/user');
+          setCurrentUser(response.data);
+        } catch (error) {
+          console.error('Error fetching current user:', error);
+        }
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // ADD THIS: Get feature access
+  const features = getUserFeatureAccess(currentUser?.membership_plan);
+
 
   const navLinkClass = (path, exact = false) => {
     const isActive = exact 
@@ -150,24 +171,48 @@ export default function Navbar() {
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-yellow-100/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10 scale-0 group-hover:scale-100"></div>
                   </Link>
                   
-                  {/* Messages Link with Badge */}
-                  <Link to="/messages" className={navLinkClass("/messages")}>
-                    <span className="flex items-center gap-2 relative">
-                      <div className="relative">
-                        <MessageSquare className="w-5 h-5" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-2 -right-2 flex h-5 w-5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                            <span className="relative inline-flex items-center justify-center rounded-full h-5 w-5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] font-bold shadow-lg">
-                              {unreadCount > 9 ? '9+' : unreadCount}
-                            </span>
-                          </span>
-                        )}
-                      </div>
-                      <span className="font-semibold">Messages</span>
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-rose-200/50 to-purple-200/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10 scale-0 group-hover:scale-100"></div>
-                  </Link>
+{features?.ai_kundli && (
+  <Link to="/ai-kundli" className={navLinkClass("/ai-kundli", true)}>
+    <span className="flex items-center gap-2">
+      <Sparkles className="w-5 h-5" />
+      <span className="font-semibold">AI Kundli</span>
+    </span>
+    <div className="absolute inset-0 bg-gradient-to-r from-purple-200/50 to-pink-200/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10 scale-0 group-hover:scale-100"></div>
+  </Link>
+)}
+
+
+                  {/* // Update the messages link section in desktop navigation: */}
+  {features.messaging ? (
+    <Link to="/messages" className={navLinkClass("/messages")}>
+      <span className="flex items-center gap-2 relative">
+        <div className="relative">
+          <MessageSquare className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-5 w-5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex items-center justify-center rounded-full h-5 w-5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] font-bold shadow-lg">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            </span>
+          )}
+        </div>
+        <span className="font-semibold">Messages</span>
+      </span>
+      <div className="absolute inset-0 bg-gradient-to-r from-rose-200/50 to-purple-200/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10 scale-0 group-hover:scale-100"></div>
+    </Link>
+  ) : (
+    <button
+      onClick={() => alert('🔒 Messaging is not available in your current plan. Please upgrade to Essential plan or higher.')}
+      className="relative px-5 py-2.5 rounded-full font-medium text-rose-400 cursor-not-allowed opacity-70"
+      title="Upgrade to Essential plan for messaging"
+    >
+      <span className="flex items-center gap-2">
+        <MessageSquare className="w-5 h-5" />
+        <span className="font-semibold">Messages</span>
+      </span>
+    </button>
+  )}
 
                   {/* Elegant Logout Button */}
                   <button

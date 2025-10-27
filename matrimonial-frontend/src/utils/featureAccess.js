@@ -8,14 +8,16 @@ export const getUserFeatureAccess = (userPlan) => {
       'ai_kundli': false,
       'ai_companion': false,
       'view_profiles': false,
-      'likes': false, // ADD THIS - free users cannot like
+      'likes': false,
+      'quick_compatibility': false,
     },
     'starter': {
       'messaging': false,
       'ai_kundli': false,
       'ai_companion': false,
       'view_profiles': true,
-      'likes': true, // ADD THIS - starter can like
+      'likes': true,
+      'quick_compatibility': false,
     },
     'essential': {
       'messaging': true,
@@ -23,6 +25,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'ai_companion': false,
       'view_profiles': true,
       'likes': true,
+      'quick_compatibility': false,
     },
     'popular': {
       'messaging': true,
@@ -30,6 +33,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'ai_companion': false,
       'view_profiles': true,
       'likes': true,
+      'quick_compatibility': true,
     },
     'premium assisted': {
       'messaging': true,
@@ -37,6 +41,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'ai_companion': true,
       'view_profiles': true,
       'likes': true,
+      'quick_compatibility': true,
     }
   };
   
@@ -56,10 +61,10 @@ export const canAccessRoute = (userPlan, routeName) => {
   const routeAccess = {
     '/messages': features.messaging,
     '/messages/*': features.messaging,
-    '/likes': features.view_profiles, // Likes page requires view_profiles access
+    '/likes': features.view_profiles,
     '/kundli': features.ai_kundli,
     '/ai-companion': features.ai_companion,
   };
   
-  return routeAccess[routeName] || true; // Default to true for unrestricted routes
+  return routeAccess[routeName] !== undefined ? routeAccess[routeName] : true;
 };

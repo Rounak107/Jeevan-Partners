@@ -20,6 +20,7 @@ import UsersDetailPage from './pages/UsersDetailPage';
 import PaymentsDetailPage from './pages/PaymentsDetailPage';
 import ActivityDetailPage from './pages/ActivityDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AIKundliPage from './pages/AIKundliPage';
 import API from "./api";
 
 export default function App() {
@@ -97,7 +98,14 @@ export default function App() {
                 </ProtectedRoute>
               } 
             />
-            
+            <Route 
+  path="/ai-kundli" 
+  element={
+    <ProtectedRoute userPlan={currentUser?.membership_plan}>
+      <AIKundliPage />
+    </ProtectedRoute>
+  } 
+/>
             {/* Other routes */}
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/membership" element={<MembershipPricing />} />
