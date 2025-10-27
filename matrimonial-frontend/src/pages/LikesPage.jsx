@@ -31,9 +31,13 @@ export default function LikesPage() {
   });
 
   // Feature access checks - recalculate when currentUser changes
-  const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
-  const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
-  const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';
+  // const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
+  // const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
+  // const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';
+  const userPlan = currentUser?.membership_plan || currentUser?.user?.membership_plan || 'free';
+const canMessage = hasFeatureAccess(userPlan, FEATURES.MESSAGING);
+const canAccessAIKundli = hasFeatureAccess(userPlan, FEATURES.AI_KUNDLI);
+const isPremiumAssisted = userPlan === 'premium assisted';
 
   // Debug logging
   useEffect(() => {
@@ -50,14 +54,18 @@ export default function LikesPage() {
   }, []);
 
   const fetchUser = async () => {
-    try {
-      const res = await API.get("/api/profile");
-      console.log("Fetched user data:", res.data);
-      setCurrentUser(res.data);
-    } catch (err) {
-      console.error("Error fetching current user:", err);
-    }
-  };
+  try {
+    const res = await API.get("/api/profile");
+    console.log("Fetched user data:", res.data);
+    setCurrentUser(res.data);
+    
+    // Use membership_plan from the response if available
+    const userPlan = res.data.membership_plan || res.data.user?.membership_plan;
+    console.log("User Plan from API:", userPlan);
+  } catch (err) {
+    console.error("Error fetching current user:", err);
+  }
+};
 
   const fetchLikes = async () => {
     try {
