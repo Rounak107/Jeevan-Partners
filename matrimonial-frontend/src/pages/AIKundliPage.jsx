@@ -298,7 +298,7 @@ const AIKundliPage = () => {
                         <div className="text-xs text-gray-500 mt-2 space-y-1">
                           <div>Your DOB: {userDob ? '✅ Available' : '❌ Missing'}</div>
                           <div>Profile DOB: {profileDob ? '✅ Available' : '❌ Missing'}</div>
-                          <div>AI Access: {hasAIAccess ? '✅ Enabled' : '❌ Disabled'}</div>
+                          {/* <div>AI Access: {hasAIAccess ? '✅ Enabled' : '❌ Disabled'}</div> */}
                           {userDob && <div>Your DOB: {userDob}</div>}
                           {profileDob && <div>Profile DOB: {profileDob}</div>}
                         </div>

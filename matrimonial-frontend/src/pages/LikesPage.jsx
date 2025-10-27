@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
-//import { generateCompatibilitySummary } from "../utils/aiCompatibility";
 import { AstroAPI } from "../utils/astroAPI";
 import KundliModal from "../components/KundliModal";
 import { toggleCompatibility } from "../utils/aiCompatibility";
+import { hasFeatureAccess, FEATURES } from "../utils/featureAccess"; // Import feature access utilities
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL
-    ? import.meta.env.VITE_API_URL.replace("/api", "")
-    : "https://couplemarriage.com";
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace("/api", "")
+  : "https://couplemarriage.com";
 
-// Build the proper storage URL for live site
 const STORAGE_BASE = `${BASE_URL}/storage`;
 const normalizePath = (p) =>
   String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
@@ -31,6 +29,14 @@ export default function LikesPage() {
     matchingData: null,
     loading: false
   });
+
+  // Feature access checks
+  const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
+  const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
+  const canAccessAICompanion = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_COMPANION);
+  
+  // For AI Compatibility - only Premium Assisted
+  const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';
 
   useEffect(() => {
     fetchUser();
@@ -63,6 +69,11 @@ export default function LikesPage() {
   };
 
   const startConversation = async (userId) => {
+    if (!canMessage) {
+      alert("Upgrade to Essential plan or higher to send messages!");
+      return;
+    }
+    
     try {
       const res = await API.post(`/api/conversations/${userId}`);
       navigate(`/messages/${res.data.id}`);
@@ -72,74 +83,75 @@ export default function LikesPage() {
     }
   };
 
- const analyzeCompatibility = (profile, user) => {
-  if (!currentUser) {
-    alert("Please complete your own profile first!");
-    return;
-  }
-  
-  // Combine profile and user data
-  const targetUserData = {
-    ...profile,
-    name: user?.name || "Unknown",
-    dob: profile?.dob || user?.dob
+  const analyzeCompatibility = (profile, user) => {
+    if (!isPremiumAssisted) {
+      alert("AI Compatibility is only available for Premium Assisted members!");
+      return;
+    }
+    
+    if (!currentUser) {
+      alert("Please complete your own profile first!");
+      return;
+    }
+    
+    const targetUserData = {
+      ...profile,
+      name: user?.name || "Unknown",
+      dob: profile?.dob || user?.dob
+    };
+    
+    toggleCompatibility(profile.id, aiResponses, setAiResponses, currentUser, targetUserData);
   };
-  
-  // Use toggle function
-  toggleCompatibility(profile.id, aiResponses, setAiResponses, currentUser, targetUserData);
-};
 
-  // Add this helper function
   const formatDate = (dateString) => {
-    if (!dateString) return '01-01-2000'; // Default date
+    if (!dateString) return '01-01-2000';
     const date = new Date(dateString);
-    // Format as DD-MM-YYYY for the API
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
 
-  // In your generateDetailedKundli function - SIMPLIFIED:
-const generateDetailedKundli = async (profile) => {
-  if (!currentUser?.dob) {
-    alert('Please complete your profile with birth date first!');
-    return;
-  }
+  const generateDetailedKundli = async (profile) => {
+    if (!canAccessAIKundli) {
+      alert("Upgrade to Popular plan or higher to access AI Kundli features!");
+      return;
+    }
 
-  setKundliModal(prev => ({ ...prev, loading: true }));
+    if (!currentUser?.dob) {
+      alert('Please complete your profile with birth date first!');
+      return;
+    }
 
-  try {
-    // SIMPLIFIED: Only need date of birth!
-    const userBirthData = {
-      date: formatDate(currentUser.dob)
-    };
+    setKundliModal(prev => ({ ...prev, loading: true }));
 
-    const targetBirthData = {
-      date: formatDate(profile.dob)
-    };
+    try {
+      const userBirthData = {
+        date: formatDate(currentUser.dob)
+      };
 
-    // Generate both kundlis using SIMPLIFIED API
-    const userKundli = await AstroAPI.generateKundli(userBirthData);
-    const targetKundli = await AstroAPI.generateKundli(targetBirthData);
+      const targetBirthData = {
+        date: formatDate(profile.dob)
+      };
 
-    // Calculate matching
-    const matchingData = AstroAPI.calculateAshtakoota(userKundli, targetKundli);
+      const userKundli = await AstroAPI.generateKundli(userBirthData);
+      const targetKundli = await AstroAPI.generateKundli(targetBirthData);
+      const matchingData = AstroAPI.calculateAshtakoota(userKundli, targetKundli);
 
-    setKundliModal({
-      isOpen: true,
-      userKundli,
-      targetKundli,
-      matchingData,
-      loading: false
-    });
+      setKundliModal({
+        isOpen: true,
+        userKundli,
+        targetKundli,
+        matchingData,
+        loading: false
+      });
 
-  } catch (error) {
-    console.error('Kundli generation failed:', error);
-    alert('Failed to generate kundli analysis. Please try again.');
-    setKundliModal(prev => ({ ...prev, loading: false }));
-  }
-};
+    } catch (error) {
+      console.error('Kundli generation failed:', error);
+      alert('Failed to generate kundli analysis. Please try again.');
+      setKundliModal(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   if (loading) {
     return (
@@ -152,6 +164,14 @@ const generateDetailedKundli = async (profile) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-rose-800 mb-8">Profiles You Liked</h1>
+
+      {/* Feature Access Debug Info - Remove in production */}
+      <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
+        <div>Current Plan: <strong>{currentUser?.membership_plan || 'free'}</strong></div>
+        <div>Messaging: {canMessage ? '✅ Enabled' : '❌ Disabled'}</div>
+        <div>AI Kundli: {canAccessAIKundli ? '✅ Enabled' : '❌ Disabled'}</div>
+        <div>AI Compatibility: {isPremiumAssisted ? '✅ Enabled' : '❌ Disabled'}</div>
+      </div>
 
       {likes.length === 0 ? (
         <div className="text-center text-rose-400 py-12">
@@ -196,28 +216,46 @@ const generateDetailedKundli = async (profile) => {
                 </div>
 
                 <div className="space-y-2">
+                  {/* Message Button - Essential+ plans */}
                   <button
                     onClick={() => startConversation(user.id || profile.user_id)}
-                    className="w-full bg-rose-700 text-white py-2 px-4 rounded-lg hover:bg-rose-800 transition-colors"
+                    className={`w-full py-2 px-4 rounded-lg transition-colors ${
+                      canMessage 
+                        ? "bg-rose-700 text-white hover:bg-rose-800" 
+                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    }`}
+                    disabled={!canMessage}
                   >
-                    Send Message
+                    {canMessage ? "Send Message" : "Upgrade to Message"}
                   </button>
                   
+                  {/* AI Kundli Button - Popular+ plans */}
                   <button
                     onClick={() => generateDetailedKundli(profile)} 
-                    disabled={kundliModal.loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+                    disabled={!canAccessAIKundli || kundliModal.loading}
+                    className={`w-full py-2 px-4 rounded-lg transition-all ${
+                      canAccessAIKundli
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    }`}
                   >
                     {kundliModal.loading ? '🔄 Analyzing...' : '🤖 AI Kundli Match'}
                   </button>
 
+                  {/* Quick Compatibility Button - Premium Assisted only */}
                   <button
                     onClick={() => analyzeCompatibility(profile, user)}
-                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+                    className={`w-full py-2 px-4 rounded-lg transition-colors ${
+                      isPremiumAssisted
+                        ? "bg-purple-600 text-white hover:bg-purple-700"
+                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    }`}
+                    disabled={!isPremiumAssisted}
                   >
                     🔮 Quick Compatibility
                   </button>
                   
+                  {/* View Profile Button - Available for all plans that can view profiles */}
                   <button
                     onClick={() => navigate(`/profile/${profile.id}`)}
                     className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors"
@@ -226,35 +264,36 @@ const generateDetailedKundli = async (profile) => {
                   </button>
                 </div>
 
-                {aiResponses[profile.id] && (
-  <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
-    <div className="flex justify-between items-start mb-2">
-      <h4 className="font-semibold text-purple-700">🤖 Quick Compatibility</h4>
-      <button 
-        onClick={() => analyzeCompatibility(profile, user)}
-        className="text-gray-500 hover:text-gray-700 text-lg"
-      >
-        ×
-      </button>
-    </div>
-    <div className="whitespace-pre-line text-sm leading-relaxed">
-      {typeof aiResponses[profile.id] === 'string' 
-        ? aiResponses[profile.id] 
-        : aiResponses[profile.id].text
-      }
-    </div>
-    {aiResponses[profile.id] && aiResponses[profile.id].score > 0 && (
-      <div className="mt-3 pt-3 border-t border-blue-200">
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-gray-600">Zodiac Match:</span>
-          <span className="font-semibold text-purple-600">
-            {aiResponses[profile.id].zodiac1} + {aiResponses[profile.id].zodiac2}
-          </span>
-        </div>
-      </div>
-    )}
-  </div>
-)}
+                {/* AI Response Display - Only show if user has access */}
+                {isPremiumAssisted && aiResponses[profile.id] && (
+                  <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-purple-700">🤖 Quick Compatibility</h4>
+                      <button 
+                        onClick={() => analyzeCompatibility(profile, user)}
+                        className="text-gray-500 hover:text-gray-700 text-lg"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="whitespace-pre-line text-sm leading-relaxed">
+                      {typeof aiResponses[profile.id] === 'string' 
+                        ? aiResponses[profile.id] 
+                        : aiResponses[profile.id].text
+                      }
+                    </div>
+                    {aiResponses[profile.id] && aiResponses[profile.id].score > 0 && (
+                      <div className="mt-3 pt-3 border-t border-blue-200">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-600">Zodiac Match:</span>
+                          <span className="font-semibold text-purple-600">
+                            {aiResponses[profile.id].zodiac1} + {aiResponses[profile.id].zodiac2}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
