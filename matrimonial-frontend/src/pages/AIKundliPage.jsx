@@ -37,16 +37,26 @@ const AIKundliPage = () => {
           const profileResponse = await API.get('/api/profile');
           console.log('📋 Current user profile with DOB:', profileResponse.data);
           setCurrentUserProfile(profileResponse.data);
-          setCurrentUser(profileResponse.data.user || profileResponse.data);
-          setFeatures(getUserFeatureAccess(profileResponse.data.user?.membership_plan || profileResponse.data.membership_plan));
+          
+          // Extract user data properly - FIXED
+          const userData = profileResponse.data.user || profileResponse.data;
+          setCurrentUser(userData);
+          
+          // Get membership plan from the right place - FIXED
+          const membershipPlan = userData.membership_plan || 'free';
+          console.log('🎯 Membership plan detected:', membershipPlan);
+          setFeatures(getUserFeatureAccess(membershipPlan));
+          
         } catch (profileError) {
           console.error('❌ Error fetching user profile, trying /api/user:', profileError);
           // Fallback to /api/user if profile endpoint fails
           const userResponse = await API.get('/api/user');
           const user = userResponse.data;
           setCurrentUser(user);
-          setFeatures(getUserFeatureAccess(user.membership_plan));
-          console.log('👤 Current user from /api/user (no DOB):', user);
+          const membershipPlan = user.membership_plan || 'free';
+          console.log('👤 Current user from /api/user:', user);
+          console.log('🎯 Membership plan from /api/user:', membershipPlan);
+          setFeatures(getUserFeatureAccess(membershipPlan));
         }
 
         // Fetch liked profiles
@@ -64,6 +74,7 @@ const AIKundliPage = () => {
         }
         
         console.log('📊 Extracted profiles for AI Kundli:', profiles);
+        console.log('🔑 Features access:', features);
         setLikedProfiles(profiles);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -92,11 +103,6 @@ const AIKundliPage = () => {
 
   // AI Kundli Match function - FIXED
   const handleAIKundliMatch = async (like) => {
-    if (!features?.ai_kundli) {
-      alert('🔒 AI Kundli Match is not available in your current plan. Please upgrade to Popular plan or higher.');
-      return;
-    }
-
     // Extract data EXACTLY LIKE LIKES PAGE
     const profile = like.profile || {};
     const userDob = getCurrentUserDob();
@@ -105,8 +111,8 @@ const AIKundliPage = () => {
     console.log('🎯 Kundli Match Data:', {
       currentUserDob: userDob,
       profileDob: profileDob,
-      currentUserProfile: currentUserProfile,
-      profile: profile
+      features: features,
+      hasAIAccess: features?.ai_kundli
     });
 
     if (!userDob) {
@@ -162,11 +168,6 @@ const AIKundliPage = () => {
 
   // Quick Compatibility function - FIXED
   const handleQuickCompatibility = (like) => {
-    if (!features?.ai_kundli) {
-      alert('🔒 Quick Compatibility is not available in your current plan. Please upgrade to Popular plan or higher.');
-      return;
-    }
-
     // Extract data EXACTLY LIKE LIKES PAGE
     const profile = like.profile || {};
     const user = like.user || profile.user || {};
@@ -176,7 +177,8 @@ const AIKundliPage = () => {
     console.log('⚡ Quick Compatibility Data:', {
       currentUserDob: userDob,
       profileDob: profileDob,
-      currentUserProfile: currentUserProfile
+      features: features,
+      hasAIAccess: features?.ai_kundli
     });
 
     if (!userDob || !profileDob) {
@@ -234,23 +236,7 @@ const AIKundliPage = () => {
           </p>
         </div>
 
-        {/* Feature Access Notice */}
-        {!features?.ai_kundli && (
-          <div className="max-w-4xl mx-auto bg-yellow-900 border border-yellow-600 rounded-xl p-6 mb-8 text-center">
-            <div className="text-yellow-200">
-              <h3 className="text-xl font-bold mb-2">🔒 Upgrade Required</h3>
-              <p className="mb-4">
-                AI Kundli features are available in <strong>Popular</strong> and <strong>Premium</strong> plans.
-              </p>
-              <button 
-                onClick={() => navigate('/membership')}
-                className="bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-rose-700 hover:to-pink-700 transition-all"
-              >
-                Upgrade Now
-              </button>
-            </div>
-          </div>
-        )}
+        {/* REMOVED: Feature Access Notice and Current Plan Info */}
 
         {/* Profiles Grid */}
         {likedProfiles.length > 0 ? (
@@ -266,13 +252,15 @@ const AIKundliPage = () => {
                 const userDob = getCurrentUserDob();
                 const profileDob = profile.dob;
                 const canAnalyze = userDob && profileDob;
+                const hasAIAccess = features?.ai_kundli;
 
                 console.log(`👤 Profile ${profileId}:`, {
                   userName: user.name,
                   profileDob: profileDob,
                   userDob: userDob,
                   canAnalyze: canAnalyze,
-                  currentUserProfile: currentUserProfile
+                  hasAIAccess: hasAIAccess,
+                  membershipPlan: currentUser?.membership_plan
                 });
 
                 return (
@@ -310,6 +298,7 @@ const AIKundliPage = () => {
                         <div className="text-xs text-gray-500 mt-2 space-y-1">
                           <div>Your DOB: {userDob ? '✅ Available' : '❌ Missing'}</div>
                           <div>Profile DOB: {profileDob ? '✅ Available' : '❌ Missing'}</div>
+                          <div>AI Access: {hasAIAccess ? '✅ Enabled' : '❌ Disabled'}</div>
                           {userDob && <div>Your DOB: {userDob}</div>}
                           {profileDob && <div>Profile DOB: {profileDob}</div>}
                         </div>
@@ -334,14 +323,14 @@ const AIKundliPage = () => {
                         )}
                       </div>
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons - FIXED: Removed feature check from disabled state */}
                       <div className="space-y-2">
                         {/* AI Kundli Match Button */}
                         <button
                           onClick={() => handleAIKundliMatch(like)}
-                          disabled={!features?.ai_kundli || loadingStates[profileId] === 'kundli' || !canAnalyze}
+                          disabled={loadingStates[profileId] === 'kundli' || !canAnalyze}
                           className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                            features?.ai_kundli && canAnalyze
+                            canAnalyze
                               ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
                           } ${loadingStates[profileId] === 'kundli' ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -362,9 +351,9 @@ const AIKundliPage = () => {
                         {/* Quick Compatibility Button */}
                         <button
                           onClick={() => handleQuickCompatibility(like)}
-                          disabled={!features?.ai_kundli || !canAnalyze}
+                          disabled={!canAnalyze}
                           className={`w-full py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                            features?.ai_kundli && canAnalyze
+                            canAnalyze
                               ? 'bg-purple-600 hover:bg-purple-700 cursor-pointer'
                               : 'bg-gray-700 cursor-not-allowed opacity-50'
                           }`}
@@ -439,22 +428,6 @@ const AIKundliPage = () => {
             </button>
           </div>
         )}
-
-        {/* Current Plan Info */}
-        <div className="max-w-4xl mx-auto text-center mt-8">
-          <div className="bg-gray-800 rounded-2xl p-6 inline-block">
-            <p className="text-gray-300 mb-2">Your Current Plan</p>
-            <p className="text-2xl font-bold text-rose-600 capitalize mb-4">
-              {currentUser?.membership_plan || 'Free'}
-            </p>
-            <button 
-              onClick={() => navigate('/membership')}
-              className="bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-rose-700 hover:to-pink-700 transition-all"
-            >
-              View Plans & Upgrade
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Kundli Modal */}
