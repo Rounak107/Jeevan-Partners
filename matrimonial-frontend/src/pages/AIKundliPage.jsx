@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { getUserFeatureAccess } from '../utils/featureAccess';
 import KundliModal from '../components/KundliModal';
+import { AstroAPI } from '../utils/astroAPI';
 import { generateCompatibilitySummary } from '../utils/aiCompatibility';
 
 const AIKundliPage = () => {
@@ -13,7 +14,8 @@ const AIKundliPage = () => {
   const [kundliData, setKundliData] = useState(null);
   const [showKundliModal, setShowKundliModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [quickCompatibilityResult, setQuickCompatibilityResult] = useState(null);
+  const [aiResponses, setAiResponses] = useState({});
+  const [loadingStates, setLoadingStates] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,81 +43,79 @@ const AIKundliPage = () => {
     fetchData();
   }, []);
 
+  // AI Kundli Match function - SAME AS LIKES PAGE
   const handleAIKundliMatch = async (profile) => {
     if (!features?.ai_kundli) {
       alert('🔒 AI Kundli Match is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
     }
 
+    setLoadingStates(prev => ({ ...prev, [profile.id]: 'kundli' }));
+    
     try {
       setSelectedProfile(profile);
       
-      // Generate kundli for both users
-      const userKundliResponse = await API.post('/api/generate-kundli', {
-        date: currentUser.dob || '2000-01-01', // fallback if user doesn't have DOB
-        time: '10:00',
+      // Get current user's birth data
+      const userBirthData = {
+        date: currentUser.dob || '2000-01-01',
+        time: '10:00:00',
         latitude: currentUser.latitude || '28.6139',
         longitude: currentUser.longitude || '77.2090'
-      });
+      };
 
-      const profileKundliResponse = await API.post('/api/generate-kundli', {
+      // Get profile's birth data
+      const profileBirthData = {
         date: profile.dob || profile.user?.dob || '2000-01-01',
-        time: '10:00',
+        time: '10:00:00',
         latitude: profile.latitude || '28.6139',
         longitude: profile.longitude || '77.2090'
-      });
+      };
 
-      // Calculate compatibility
-      const matchingResponse = await API.post('/api/calculate-compatibility', {
-        userKundli: userKundliResponse.data,
-        profileKundli: profileKundliResponse.data
-      });
+      // Generate kundli for both users using the same AstroAPI as likes page
+      const [userKundli, profileKundli] = await Promise.all([
+        AstroAPI.generateKundli(userBirthData),
+        AstroAPI.generateKundli(profileBirthData)
+      ]);
+
+      // Calculate compatibility using the same function as likes page
+      const matchingData = AstroAPI.calculateAshtakoota(userKundli, profileKundli);
 
       setKundliData({
-        userKundli: userKundliResponse.data,
-        profileKundli: profileKundliResponse.data,
-        matching: matchingResponse.data
+        userKundli,
+        profileKundli,
+        matching: matchingData
       });
       setShowKundliModal(true);
     } catch (error) {
       console.error('Error generating kundli match:', error);
       alert('Failed to generate kundli match. Please try again.');
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [profile.id]: null }));
     }
   };
 
+  // Quick Compatibility function - SAME AS LIKES PAGE
   const handleQuickCompatibility = async (profile) => {
     if (!features?.ai_kundli) {
       alert('🔒 Quick Compatibility is not available in your current plan. Please upgrade to Popular plan or higher.');
       return;
     }
 
+    setLoadingStates(prev => ({ ...prev, [profile.id]: 'compatibility' }));
+    
     try {
-      setSelectedProfile(profile);
       const analysis = generateCompatibilitySummary(currentUser, profile);
-      setQuickCompatibilityResult(analysis);
       
-      // Show in modal
-      setKundliData({
-        quickCompatibility: analysis,
-        userKundli: { zodiac: analysis.zodiac1 },
-        profileKundli: { zodiac: analysis.zodiac2 }
-      });
-      setShowKundliModal(true);
+      // Toggle display same as likes page
+      setAiResponses(prev => ({
+        ...prev,
+        [profile.id]: prev[profile.id] ? null : analysis
+      }));
     } catch (error) {
       console.error('Error in quick compatibility:', error);
       alert('Failed to generate quick compatibility. Please try again.');
-    }
-  };
-
-  const handleMessage = (profile) => {
-    if (!features?.messaging) {
-      alert('🔒 Messaging is not available in your current plan. Please upgrade to Essential plan or higher.');
-      return;
-    }
-    
-    const userId = profile.user_id || profile.user?.id;
-    if (userId) {
-      navigate(`/messages/${userId}`);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [profile.id]: null }));
     }
   };
 
@@ -217,50 +217,86 @@ const AIKundliPage = () => {
                       )}
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons - SAME AS LIKES PAGE */}
                     <div className="grid grid-cols-1 gap-3">
                       {/* AI Kundli Match Button */}
                       <button
                         onClick={() => handleAIKundliMatch(profile)}
-                        disabled={!features?.ai_kundli}
+                        disabled={!features?.ai_kundli || loadingStates[profile.id] === 'kundli'}
                         className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
                           features?.ai_kundli
                             ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 cursor-pointer'
                             : 'bg-gray-700 cursor-not-allowed opacity-50'
-                        }`}
+                        } ${loadingStates[profile.id] === 'kundli' ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        <span>🌌</span>
-                        <span>AI Kundli Match</span>
+                        {loadingStates[profile.id] === 'kundli' ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🌌</span>
+                            <span>AI Kundli Match</span>
+                          </>
+                        )}
                       </button>
 
                       {/* Quick Compatibility Button */}
                       <button
                         onClick={() => handleQuickCompatibility(profile)}
-                        disabled={!features?.ai_kundli}
+                        disabled={!features?.ai_kundli || loadingStates[profile.id] === 'compatibility'}
                         className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
                           features?.ai_kundli
                             ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 cursor-pointer'
                             : 'bg-gray-700 cursor-not-allowed opacity-50'
-                        }`}
+                        } ${loadingStates[profile.id] === 'compatibility' ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        <span>⚡</span>
-                        <span>Quick Compatibility</span>
-                      </button>
-
-                      {/* Message Button */}
-                      <button
-                        onClick={() => handleMessage(profile)}
-                        disabled={!features?.messaging}
-                        className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                          features?.messaging
-                            ? 'bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 cursor-pointer'
-                            : 'bg-gray-700 cursor-not-allowed opacity-50'
-                        }`}
-                      >
-                        <span>💬</span>
-                        <span>Send Message</span>
+                        {loadingStates[profile.id] === 'compatibility' ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>⚡</span>
+                            <span>
+                              {aiResponses[profile.id] ? 'Hide Compatibility' : 'Quick Compatibility'}
+                            </span>
+                          </>
+                        )}
                       </button>
                     </div>
+
+                    {/* Quick Compatibility Result - SAME AS LIKES PAGE */}
+                    {aiResponses[profile.id] && (
+                      <div className="mt-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-rose-400 text-sm">⚡ Quick Compatibility</h4>
+                          <button 
+                            onClick={() => setAiResponses(prev => ({ ...prev, [profile.id]: null }))}
+                            className="text-gray-400 hover:text-white text-lg"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div className="bg-gray-900 rounded p-3">
+                          <pre className="whitespace-pre-wrap text-xs text-gray-300">
+                            {aiResponses[profile.id].text}
+                          </pre>
+                        </div>
+                        {aiResponses[profile.id].score > 0 && (
+                          <div className="mt-2 text-center">
+                            <div className="text-lg font-bold text-rose-500">
+                              {aiResponses[profile.id].score}% Match
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {aiResponses[profile.id].level} Compatibility
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -306,7 +342,6 @@ const AIKundliPage = () => {
         onClose={() => {
           setShowKundliModal(false);
           setSelectedProfile(null);
-          setQuickCompatibilityResult(null);
         }}
         userKundli={kundliData?.userKundli}
         targetKundli={kundliData?.profileKundli}
