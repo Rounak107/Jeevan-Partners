@@ -20,6 +20,7 @@ export default function LikesPage() {
   const [loading, setLoading] = useState(true);
   const [aiResponses, setAiResponses] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
+  const [userMembership, setUserMembership] = useState(null);
   const navigate = useNavigate();
 
   const [kundliModal, setKundliModal] = useState({
@@ -30,42 +31,47 @@ export default function LikesPage() {
     loading: false
   });
 
-  // Feature access checks - recalculate when currentUser changes
-  // const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
-  // const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
-  // const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';
-  const userPlan = currentUser?.membership_plan || currentUser?.user?.membership_plan || 'free';
-const canMessage = hasFeatureAccess(userPlan, FEATURES.MESSAGING);
-const canAccessAIKundli = hasFeatureAccess(userPlan, FEATURES.AI_KUNDLI);
-const isPremiumAssisted = userPlan === 'premium assisted';
+  // Feature access checks - use membership data from separate API call
+  const userPlan = userMembership?.plan_name?.toLowerCase() || 'free';
+  const canMessage = hasFeatureAccess(userPlan, FEATURES.MESSAGING);
+  const canAccessAIKundli = hasFeatureAccess(userPlan, FEATURES.AI_KUNDLI);
+  const isPremiumAssisted = userPlan === 'premium assisted';
 
   // Debug logging
   useEffect(() => {
     console.log("Current User:", currentUser);
-    console.log("Membership Plan:", currentUser?.membership_plan);
+    console.log("User Membership:", userMembership);
+    console.log("User Plan:", userPlan);
     console.log("Can Message:", canMessage);
     console.log("Can Access AI Kundli:", canAccessAIKundli);
     console.log("Is Premium Assisted:", isPremiumAssisted);
-  }, [currentUser, canMessage, canAccessAIKundli, isPremiumAssisted]);
+  }, [currentUser, userMembership, userPlan, canMessage, canAccessAIKundli, isPremiumAssisted]);
 
   useEffect(() => {
     fetchUser();
+    fetchUserMembership();
     fetchLikes();
   }, []);
 
   const fetchUser = async () => {
-  try {
-    const res = await API.get("/api/profile");
-    console.log("Fetched user data:", res.data);
-    setCurrentUser(res.data);
-    
-    // Use membership_plan from the response if available
-    const userPlan = res.data.membership_plan || res.data.user?.membership_plan;
-    console.log("User Plan from API:", userPlan);
-  } catch (err) {
-    console.error("Error fetching current user:", err);
-  }
-};
+    try {
+      const res = await API.get("/api/profile");
+      console.log("Fetched user data:", res.data);
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.error("Error fetching current user:", err);
+    }
+  };
+
+  const fetchUserMembership = async () => {
+    try {
+      const res = await API.get("/api/user/membership");
+      console.log("Fetched membership data:", res.data);
+      setUserMembership(res.data);
+    } catch (err) {
+      console.error("Error fetching membership:", err);
+    }
+  };
 
   const fetchLikes = async () => {
     try {
@@ -166,10 +172,10 @@ const isPremiumAssisted = userPlan === 'premium assisted';
       <h1 className="text-3xl font-bold text-rose-800 mb-8">Profiles You Liked</h1>
 
       {/* Temporary debug info - remove after testing */}
-      {currentUser && (
+      {userMembership && (
         <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-sm">
           <div><strong>DEBUG INFO (Remove in production):</strong></div>
-          <div>Plan: <strong>{currentUser?.membership_plan || 'free'}</strong></div>
+          <div>Plan: <strong>{userPlan || 'free'}</strong></div>
           <div>Can Message: {canMessage ? '✅' : '❌'}</div>
           <div>Can Access AI Kundli: {canAccessAIKundli ? '✅' : '❌'}</div>
           <div>Is Premium Assisted: {isPremiumAssisted ? '✅' : '❌'}</div>
