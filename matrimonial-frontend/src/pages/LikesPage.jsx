@@ -30,12 +30,19 @@ export default function LikesPage() {
     loading: false
   });
 
-  // Feature access checks
+  // Feature access checks - recalculate when currentUser changes
   const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
   const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
-  
-  // For AI Compatibility - only Premium Assisted
   const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Current User:", currentUser);
+    console.log("Membership Plan:", currentUser?.membership_plan);
+    console.log("Can Message:", canMessage);
+    console.log("Can Access AI Kundli:", canAccessAIKundli);
+    console.log("Is Premium Assisted:", isPremiumAssisted);
+  }, [currentUser, canMessage, canAccessAIKundli, isPremiumAssisted]);
 
   useEffect(() => {
     fetchUser();
@@ -45,6 +52,7 @@ export default function LikesPage() {
   const fetchUser = async () => {
     try {
       const res = await API.get("/api/profile");
+      console.log("Fetched user data:", res.data);
       setCurrentUser(res.data);
     } catch (err) {
       console.error("Error fetching current user:", err);
@@ -149,7 +157,16 @@ export default function LikesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-rose-800 mb-8">Profiles You Liked</h1>
 
-      {/* REMOVED the debug info box */}
+      {/* Temporary debug info - remove after testing */}
+      {currentUser && (
+        <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-sm">
+          <div><strong>DEBUG INFO (Remove in production):</strong></div>
+          <div>Plan: <strong>{currentUser?.membership_plan || 'free'}</strong></div>
+          <div>Can Message: {canMessage ? '✅' : '❌'}</div>
+          <div>Can Access AI Kundli: {canAccessAIKundli ? '✅' : '❌'}</div>
+          <div>Is Premium Assisted: {isPremiumAssisted ? '✅' : '❌'}</div>
+        </div>
+      )}
 
       {likes.length === 0 ? (
         <div className="text-center text-rose-400 py-12">
