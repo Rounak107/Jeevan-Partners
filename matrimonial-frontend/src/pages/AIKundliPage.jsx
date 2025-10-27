@@ -16,6 +16,7 @@ const imgUrl = (p) => `${STORAGE_BASE}/${normalizePath(p)}`;
 
 const AIKundliPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [features, setFeatures] = useState(null);
   const [likedProfiles, setLikedProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,13 +32,24 @@ const AIKundliPage = () => {
       try {
         setLoading(true);
         
-        // Fetch current user with profile data - SAME AS LIKES PAGE
-        const userResponse = await API.get('/api/user');
-        const user = userResponse.data;
-        setCurrentUser(user);
-        setFeatures(getUserFeatureAccess(user.membership_plan));
+        // Fetch current user's profile with DOB - USE SAME ENDPOINT AS LIKES PAGE
+        try {
+          const profileResponse = await API.get('/api/profile');
+          console.log('📋 Current user profile with DOB:', profileResponse.data);
+          setCurrentUserProfile(profileResponse.data);
+          setCurrentUser(profileResponse.data.user || profileResponse.data);
+          setFeatures(getUserFeatureAccess(profileResponse.data.user?.membership_plan || profileResponse.data.membership_plan));
+        } catch (profileError) {
+          console.error('❌ Error fetching user profile, trying /api/user:', profileError);
+          // Fallback to /api/user if profile endpoint fails
+          const userResponse = await API.get('/api/user');
+          const user = userResponse.data;
+          setCurrentUser(user);
+          setFeatures(getUserFeatureAccess(user.membership_plan));
+          console.log('👤 Current user from /api/user (no DOB):', user);
+        }
 
-        // Fetch liked profiles - EXACTLY LIKE LIKES PAGE
+        // Fetch liked profiles
         const likesResponse = await API.get('/api/me/likes');
         console.log('🔄 Raw likes API response:', likesResponse.data);
         
@@ -65,7 +77,7 @@ const AIKundliPage = () => {
 
   // Use the SAME formatDate function as LikesPage
   const formatDate = (dateString) => {
-    if (!dateString) return '01-01-2000';
+    if (!dateString) return null;
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -73,7 +85,12 @@ const AIKundliPage = () => {
     return `${day}-${month}-${year}`;
   };
 
-  // AI Kundli Match function - EXACTLY LIKE LIKES PAGE
+  // Get current user's DOB - FIXED
+  const getCurrentUserDob = () => {
+    return currentUserProfile?.dob || currentUser?.dob;
+  };
+
+  // AI Kundli Match function - FIXED
   const handleAIKundliMatch = async (like) => {
     if (!features?.ai_kundli) {
       alert('🔒 AI Kundli Match is not available in your current plan. Please upgrade to Popular plan or higher.');
@@ -82,13 +99,22 @@ const AIKundliPage = () => {
 
     // Extract data EXACTLY LIKE LIKES PAGE
     const profile = like.profile || {};
-    
-    if (!currentUser?.dob) {
-      alert('Please complete your profile with birth date first!');
+    const userDob = getCurrentUserDob();
+    const profileDob = profile.dob;
+
+    console.log('🎯 Kundli Match Data:', {
+      currentUserDob: userDob,
+      profileDob: profileDob,
+      currentUserProfile: currentUserProfile,
+      profile: profile
+    });
+
+    if (!userDob) {
+      alert('Please complete your profile with birth date first! Go to your profile and add your date of birth.');
       return;
     }
 
-    if (!profile.dob) {
+    if (!profileDob) {
       alert('This profile does not have a birth date set. Cannot generate kundli match.');
       return;
     }
@@ -101,18 +127,16 @@ const AIKundliPage = () => {
       
       // USE EXACTLY THE SAME LOGIC AS LIKES PAGE
       const userBirthData = {
-        date: formatDate(currentUser.dob)
+        date: formatDate(userDob)
       };
 
       const targetBirthData = {
-        date: formatDate(profile.dob)
+        date: formatDate(profileDob)
       };
 
       console.log('📅 Birth data for kundli:', {
         userBirthData,
-        targetBirthData,
-        currentUserDob: currentUser.dob,
-        profileDob: profile.dob
+        targetBirthData
       });
 
       // Generate both kundlis using the SAME AstroAPI
@@ -136,32 +160,28 @@ const AIKundliPage = () => {
     }
   };
 
-  // Quick Compatibility function - EXACTLY LIKE LIKES PAGE
+  // Quick Compatibility function - FIXED
   const handleQuickCompatibility = (like) => {
     if (!features?.ai_kundli) {
       alert('🔒 Quick Compatibility is not available in your current plan. Please upgrade to Popular plan or higher.');
-      return;
-    }
-    
-    if (!currentUser) {
-      alert("Please complete your own profile first!");
       return;
     }
 
     // Extract data EXACTLY LIKE LIKES PAGE
     const profile = like.profile || {};
     const user = like.user || profile.user || {};
+    const userDob = getCurrentUserDob();
+    const profileDob = profile.dob;
 
     console.log('⚡ Quick Compatibility Data:', {
-      currentUserDob: currentUser.dob,
-      profileDob: profile.dob,
-      profile: profile,
-      user: user
+      currentUserDob: userDob,
+      profileDob: profileDob,
+      currentUserProfile: currentUserProfile
     });
 
-    if (!currentUser.dob || !profile.dob) {
-      if (!currentUser.dob) {
-        alert('Please add your birth date in your profile for compatibility analysis.');
+    if (!userDob || !profileDob) {
+      if (!userDob) {
+        alert('Please add your birth date in your profile for compatibility analysis. Go to your profile settings to add your date of birth.');
       } else {
         alert('This profile does not have a birth date set. Cannot analyze compatibility.');
       }
@@ -175,14 +195,20 @@ const AIKundliPage = () => {
       dob: profile.dob
     };
 
+    const currentUserForAnalysis = {
+      ...currentUserProfile,
+      name: currentUserProfile?.user?.name || currentUser?.name || "You",
+      dob: userDob
+    };
+
     console.log('👥 Compatibility analysis:', {
-      currentUser: { name: currentUser.name, dob: currentUser.dob },
+      currentUser: currentUserForAnalysis,
       targetUser: targetUserData
     });
     
     // Use the SAME toggleCompatibility function
     const profileId = profile.id || like.id;
-    toggleCompatibility(profileId, aiResponses, setAiResponses, currentUser, targetUserData);
+    toggleCompatibility(profileId, aiResponses, setAiResponses, currentUserForAnalysis, targetUserData);
   };
 
   if (loading) {
@@ -232,12 +258,12 @@ const AIKundliPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {likedProfiles.map((like, idx) => {
                 // EXTRACT DATA EXACTLY LIKE LIKES PAGE
-                const profile = like.profile || like;
+                const profile = like.profile || {};
                 const user = like.user || profile.user || {};
                 const avatar = profile.profile_photo ? imgUrl(profile.profile_photo) : null;
                 const profileId = profile.id || like.profile_id || like.id || idx;
 
-                const userDob = currentUser?.dob;
+                const userDob = getCurrentUserDob();
                 const profileDob = profile.dob;
                 const canAnalyze = userDob && profileDob;
 
@@ -245,7 +271,8 @@ const AIKundliPage = () => {
                   userName: user.name,
                   profileDob: profileDob,
                   userDob: userDob,
-                  canAnalyze: canAnalyze
+                  canAnalyze: canAnalyze,
+                  currentUserProfile: currentUserProfile
                 });
 
                 return (
@@ -283,6 +310,7 @@ const AIKundliPage = () => {
                         <div className="text-xs text-gray-500 mt-2 space-y-1">
                           <div>Your DOB: {userDob ? '✅ Available' : '❌ Missing'}</div>
                           <div>Profile DOB: {profileDob ? '✅ Available' : '❌ Missing'}</div>
+                          {userDob && <div>Your DOB: {userDob}</div>}
                           {profileDob && <div>Profile DOB: {profileDob}</div>}
                         </div>
                       </div>
@@ -306,7 +334,7 @@ const AIKundliPage = () => {
                         )}
                       </div>
 
-                      {/* Action Buttons - SAME AS LIKES PAGE BUT WITHOUT MESSAGE BUTTON */}
+                      {/* Action Buttons */}
                       <div className="space-y-2">
                         {/* AI Kundli Match Button */}
                         <button
@@ -354,13 +382,13 @@ const AIKundliPage = () => {
                           {!userDob && !profileDob 
                             ? 'Add birth dates to both profiles for analysis'
                             : !userDob 
-                            ? 'Add your birth date in your profile'
+                            ? 'Add your birth date in your profile for compatibility analysis'
                             : 'Profile birth date missing'
                           }
                         </div>
                       )}
 
-                      {/* Quick Compatibility Result - SAME AS LIKES PAGE */}
+                      {/* Quick Compatibility Result */}
                       {aiResponses[profileId] && (
                         <div className="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 text-gray-800">
                           <div className="flex justify-between items-start mb-2">
