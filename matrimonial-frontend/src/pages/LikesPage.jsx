@@ -38,14 +38,14 @@ export default function LikesPage() {
   const isPremiumAssisted = userPlan === 'premium assisted';
 
   // Debug logging
-  useEffect(() => {
-    console.log("Current User:", currentUser);
-    console.log("User Membership:", userMembership);
-    console.log("User Plan:", userPlan);
-    console.log("Can Message:", canMessage);
-    console.log("Can Access AI Kundli:", canAccessAIKundli);
-    console.log("Is Premium Assisted:", isPremiumAssisted);
-  }, [currentUser, userMembership, userPlan, canMessage, canAccessAIKundli, isPremiumAssisted]);
+  // useEffect(() => {
+  //   console.log("Current User:", currentUser);
+  //   console.log("User Membership:", userMembership);
+  //   console.log("User Plan:", userPlan);
+  //   console.log("Can Message:", canMessage);
+  //   console.log("Can Access AI Kundli:", canAccessAIKundli);
+  //   console.log("Is Premium Assisted:", isPremiumAssisted);
+  // }, [currentUser, userMembership, userPlan, canMessage, canAccessAIKundli, isPremiumAssisted]);
 
   useEffect(() => {
     fetchUser();
@@ -171,7 +171,7 @@ export default function LikesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-rose-800 mb-8">Profiles You Liked</h1>
 
-      {/* Temporary debug info - remove after testing */}
+      {/* Temporary debug info - remove after testing
       {userMembership && (
         <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-sm">
           <div><strong>DEBUG INFO (Remove in production):</strong></div>
@@ -180,7 +180,7 @@ export default function LikesPage() {
           <div>Can Access AI Kundli: {canAccessAIKundli ? '✅' : '❌'}</div>
           <div>Is Premium Assisted: {isPremiumAssisted ? '✅' : '❌'}</div>
         </div>
-      )}
+      )} */}
 
       {likes.length === 0 ? (
         <div className="text-center text-rose-400 py-12">
