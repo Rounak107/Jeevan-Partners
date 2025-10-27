@@ -11,16 +11,15 @@ import {
 } from '@heroicons/react/24/solid';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
-import { getUserFeatureAccess } from '../utils/featureAccess'; // ADD THIS IMPORT
+import { getUserFeatureAccess } from '../utils/featureAccess';
 
 export default function ProfileCard({ profile, onMessageClick, onLike, initialLiked = false }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // ADD THIS STATE
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
-  // ADD THIS: Get current user and their feature access
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -33,26 +32,21 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     fetchCurrentUser();
   }, []);
 
-  // ADD THIS: Get feature access for current user
   const features = getUserFeatureAccess(currentUser?.membership_plan);
 
-  // FIXED: Use profile ID for navigation, not user ID
   const getProfileId = () => {
-    return profile.id; // This is the PROFILE ID from the database
+    return profile.id;
   };
 
-  // Get the user ID for likes (keep this for like functionality)
   const getUserId = () => {
     return profile.user_id || profile.user?.id;
   };
 
-  // Get all images (profile photo + additional photos)
   const allImages = [
     profile.profile_photo,
     ...(profile.photos || [])
   ].filter(Boolean);
 
-  // Check if profile is already liked when component mounts
   useEffect(() => {
     const checkIfLiked = async () => {
       try {
@@ -72,9 +66,7 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     checkIfLiked();
   }, [profile]);
 
-  // FIXED: Use profile ID for navigation
   const navigateToProfile = () => {
-    // ADD FEATURE CHECK: Only allow if user has view_profiles access
     if (!features.view_profiles) {
       alert('🔒 Viewing profiles is not available in your current plan. Please upgrade to Starter plan or higher.');
       return;
@@ -83,6 +75,12 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
   };
 
   const handleLike = async () => {
+    // ADD FEATURE CHECK FOR LIKES
+    if (!features.likes) {
+      alert('🔒 Liking profiles is not available in your current plan. Please upgrade to Starter plan or higher.');
+      return;
+    }
+    
     if (loading) return;
     
     setLoading(true);
@@ -112,7 +110,6 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
     }
   };
 
-  // ADD THIS: Handle message click with feature check
   const handleMessageClick = (userId) => {
     if (!features.messaging) {
       alert('🔒 Messaging is not available in your current plan. Please upgrade to Essential plan or higher.');
@@ -195,16 +192,21 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
           </div>
         )}
         
-        {/* Like Button */}
+        {/* Like Button - UPDATED WITH FEATURE CHECK */}
         <button
-          onClick={handleLike}
-          disabled={loading}
-          className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+          onClick={features.likes ? handleLike : () => alert('🔒 Upgrade to Starter plan to like profiles')}
+          disabled={loading || !features.likes}
+          className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
+            features.likes 
+              ? 'bg-black/50 hover:bg-black/70' 
+              : 'bg-gray-500 cursor-not-allowed'
+          }`}
+          title={!features.likes ? 'Upgrade to Starter plan to like profiles' : ''}
         >
           {isLiked ? (
             <HeartSolidIcon className="w-6 h-6 text-red-500" />
           ) : (
-            <HeartIcon className="w-6 h-6 text-white" />
+            <HeartIcon className={`w-6 h-6 ${features.likes ? 'text-white' : 'text-gray-300'}`} />
           )}
         </button>
       </div>
@@ -243,7 +245,7 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
 
         {/* Action Buttons */}
         <div className="flex space-x-2">
-          {/* Message Button - Only show for Essential, Popular, Premium */}
+          {/* Message Button */}
           {features.messaging ? (
             <button
               onClick={() => handleMessageClick(getUserId())}
@@ -263,7 +265,7 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
             </button>
           )}
           
-          {/* Profile Button - Only show for Starter, Essential, Popular, Premium */}
+          {/* Profile Button */}
           {features.view_profiles ? (
             <button
               onClick={navigateToProfile}
@@ -285,6 +287,11 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
         </div>
 
         {/* Upgrade Prompts */}
+        {!features.likes && (
+          <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-600 rounded text-yellow-200 text-xs text-center">
+            🔒 Upgrade to <strong>Starter</strong> plan to like profiles
+          </div>
+        )}
         {!features.messaging && (
           <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-600 rounded text-yellow-200 text-xs text-center">
             🔒 Upgrade to <strong>Essential</strong> plan for messaging

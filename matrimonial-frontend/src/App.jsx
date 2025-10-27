@@ -1,5 +1,5 @@
 // src/App.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -19,15 +19,35 @@ import DashboardPage from './pages/DashboardPage';
 import UsersDetailPage from './pages/UsersDetailPage';
 import PaymentsDetailPage from './pages/PaymentsDetailPage';
 import ActivityDetailPage from './pages/ActivityDetailPage';
+import ProtectedRoute from './components/ProtectedRoute'; // ADD THIS IMPORT
 import API from "./api";
-import { useEffect } from "react";
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await API.get('/api/user');
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Initialize CSRF and fetch user
     API.get("/sanctum/csrf-cookie").then(() => {
       console.log("✅ Global CSRF cookie initialized");
+      fetchCurrentUser();
     });
   }, []);
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+  }
 
   return (
     <Router>
@@ -41,14 +61,39 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/matches" element={<MatchesPage />} />
-            <Route path="/messages" element={<MessagesListPage />} />
-            <Route path="/messages/:id" element={<MessagesPage />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/messages" 
+              element={
+                <ProtectedRoute userPlan={currentUser?.membership_plan}>
+                  <MessagesListPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/messages/:id" 
+              element={
+                <ProtectedRoute userPlan={currentUser?.membership_plan}>
+                  <MessagesPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/likes" 
+              element={
+                <ProtectedRoute userPlan={currentUser?.membership_plan}>
+                  <LikesPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Other routes */}
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/membership" element={<MembershipPricing />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/call/:id" element={<CallPage />} />
-            <Route path="/likes" element={<LikesPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/users" element={<UsersDetailPage />} />
             <Route path="/dashboard/payments" element={<PaymentsDetailPage />} />
