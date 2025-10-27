@@ -75,40 +75,42 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
   };
 
   const handleLike = async () => {
-    // ADD FEATURE CHECK FOR LIKES
+    // ADD FEATURE CHECK FOR LIKES - Only Free plan cannot like
     if (!features.likes) {
-      alert('🔒 Liking profiles is not available in your current plan. Please upgrade to Starter plan or higher.');
-      return;
+        alert('🔒 Liking profiles is not available in your Free plan. Please upgrade to Starter plan or higher to like profiles.');
+        return;
     }
     
     if (loading) return;
     
     setLoading(true);
     try {
-      const userId = getUserId();
-      if (!userId) {
-        throw new Error('User ID not found');
-      }
+        const userId = getUserId();
+        if (!userId) {
+            throw new Error('User ID not found');
+        }
 
-      if (!isLiked) {
-        await API.post(`/api/likes/${userId}`);
-        setIsLiked(true);
-        if (onLike) onLike(profile);
-      } else {
-        await API.delete(`/api/likes/${userId}`);
-        setIsLiked(false);
-      }
+        if (!isLiked) {
+            await API.post(`/api/likes/${userId}`);
+            setIsLiked(true);
+            if (onLike) onLike(profile);
+        } else {
+            await API.delete(`/api/likes/${userId}`);
+            setIsLiked(false);
+        }
     } catch (error) {
-      console.error('Error toggling like:', error);
-      if (error.response) {
-        alert(`Failed to like profile: ${error.response.data.message || 'Server error'}`);
-      } else {
-        alert('Failed to like profile. Please check your connection.');
-      }
+        console.error('Error toggling like:', error);
+        if (error.response?.status === 403) {
+            alert('🔒 This feature is not available in your current plan. Please upgrade to like profiles.');
+        } else if (error.response) {
+            alert(`Failed to like profile: ${error.response.data.message || 'Server error'}`);
+        } else {
+            alert('Failed to like profile. Please check your connection.');
+        }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleMessageClick = (userId) => {
     if (!features.messaging) {
@@ -194,21 +196,21 @@ export default function ProfileCard({ profile, onMessageClick, onLike, initialLi
         
         {/* Like Button - UPDATED WITH FEATURE CHECK */}
         <button
-          onClick={features.likes ? handleLike : () => alert('🔒 Upgrade to Starter plan to like profiles')}
-          disabled={loading || !features.likes}
-          className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
-            features.likes 
-              ? 'bg-black/50 hover:bg-black/70' 
-              : 'bg-gray-500 cursor-not-allowed'
-          }`}
-          title={!features.likes ? 'Upgrade to Starter plan to like profiles' : ''}
-        >
-          {isLiked ? (
-            <HeartSolidIcon className="w-6 h-6 text-red-500" />
-          ) : (
-            <HeartIcon className={`w-6 h-6 ${features.likes ? 'text-white' : 'text-gray-300'}`} />
-          )}
-        </button>
+    onClick={features.likes ? handleLike : () => alert('🔒 Upgrade to Starter plan to like profiles')}
+    disabled={loading || !features.likes}
+    className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
+        features.likes 
+            ? 'bg-black/50 hover:bg-black/70 cursor-pointer' 
+            : 'bg-gray-500 cursor-not-allowed'
+    }`}
+    title={!features.likes ? 'Upgrade to Starter plan to like profiles' : ''}
+>
+    {isLiked ? (
+        <HeartSolidIcon className="w-6 h-6 text-red-500" />
+    ) : (
+        <HeartIcon className={`w-6 h-6 ${features.likes ? 'text-white' : 'text-gray-300'}`} />
+    )}
+</button>
       </div>
 
       {/* Profile Info */}

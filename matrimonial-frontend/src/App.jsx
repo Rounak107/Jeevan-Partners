@@ -19,7 +19,7 @@ import DashboardPage from './pages/DashboardPage';
 import UsersDetailPage from './pages/UsersDetailPage';
 import PaymentsDetailPage from './pages/PaymentsDetailPage';
 import ActivityDetailPage from './pages/ActivityDetailPage';
-import ProtectedRoute from './components/ProtectedRoute'; // ADD THIS IMPORT
+import ProtectedRoute from './components/ProtectedRoute';
 import API from "./api";
 
 export default function App() {
@@ -27,32 +27,42 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const initializeApp = async () => {
       try {
+        // Initialize CSRF first
+        await API.get("/sanctum/csrf-cookie");
+        console.log("✅ Global CSRF cookie initialized");
+        
+        // Then fetch current user
         const response = await API.get('/api/user');
         setCurrentUser(response.data);
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error('Error initializing app:', error);
+        // User might not be authenticated, which is fine
+        setCurrentUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    // Initialize CSRF and fetch user
-    API.get("/sanctum/csrf-cookie").then(() => {
-      console.log("✅ Global CSRF cookie initialized");
-      fetchCurrentUser();
-    });
+    initializeApp();
   }, []);
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-900 flex flex-col">
-        <Navbar />
+        <Navbar currentUser={currentUser} />
         
         {/* Main content area that grows to fill space */}
         <main className="flex-1 container mx-auto px-4 py-8">
