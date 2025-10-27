@@ -30,10 +30,9 @@ export default function LikesPage() {
     loading: false
   });
 
-  // Feature access checks
+  // Feature access checks - REMOVED unused canAccessAICompanion
   const canMessage = hasFeatureAccess(currentUser?.membership_plan, FEATURES.MESSAGING);
   const canAccessAIKundli = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_KUNDLI);
-  const canAccessAICompanion = hasFeatureAccess(currentUser?.membership_plan, FEATURES.AI_COMPANION);
   
   // For AI Compatibility - only Premium Assisted
   const isPremiumAssisted = currentUser?.membership_plan === 'premium assisted';

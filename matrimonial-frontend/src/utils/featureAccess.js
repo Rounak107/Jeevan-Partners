@@ -54,6 +54,19 @@ export const canAccessFeature = (userPlan, feature) => {
   return features[feature] || false;
 };
 
+// Alias for canAccessFeature - this is what you're importing as hasFeatureAccess
+export const hasFeatureAccess = canAccessFeature;
+
+// Feature constants - this is what you're importing as FEATURES
+export const FEATURES = {
+  MESSAGING: 'messaging',
+  AI_KUNDLI: 'ai_kundli', 
+  AI_COMPANION: 'ai_companion',
+  VIEW_PROFILES: 'view_profiles',
+  LIKES: 'likes',
+  QUICK_COMPATIBILITY: 'quick_compatibility'
+};
+
 // Check if user can access a route/page
 export const canAccessRoute = (userPlan, routeName) => {
   const features = getUserFeatureAccess(userPlan);
