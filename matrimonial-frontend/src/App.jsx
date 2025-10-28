@@ -117,17 +117,41 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/call/:id" element={<CallPage />} />
+            
+            {/* Protected Dashboard Routes */}
             <Route 
-  path="/dashboard" 
-  element={
-    <ProtectedDashboard>
-      <DashboardPage />  {/* ✅ Use DashboardPage with protection */}
-    </ProtectedDashboard>
-  } 
-/>
-            {/* <Route path="/dashboard/users" element={<UsersDetailPage />} />
-            <Route path="/dashboard/payments" element={<PaymentsDetailPage />} />
-            <Route path="/dashboard/activity" element={<ActivityDetailPage />} /> */}
+              path="/dashboard" 
+              element={
+                <ProtectedDashboard>
+                  <DashboardPage />
+                </ProtectedDashboard>
+              } 
+            />
+            <Route 
+              path="/dashboard/users" 
+              element={
+                <ProtectedDashboard>
+                  <UsersDetailPage />
+                </ProtectedDashboard>
+              } 
+            />
+            <Route 
+              path="/dashboard/payments" 
+              element={
+                <ProtectedDashboard>
+                  <PaymentsDetailPage />
+                </ProtectedDashboard>
+              } 
+            />
+            <Route 
+              path="/dashboard/activity" 
+              element={
+                <ProtectedDashboard>
+                  <ActivityDetailPage />
+                </ProtectedDashboard>
+              } 
+            />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
