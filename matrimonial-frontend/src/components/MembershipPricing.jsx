@@ -168,28 +168,8 @@ const MembershipPricing = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 py-16 relative overflow-hidden">
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-32 h-32 bg-rose-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-                <div className="absolute top-40 right-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-20 left-20 w-32 h-32 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
-            </div>
 
             <style>{`
-                @keyframes blob {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                }
-                .animate-blob {
-                    animation: blob 7s infinite;
-                }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
-                }
-                .animation-delay-4000 {
-                    animation-delay: 4s;
-                }
                 @keyframes float {
                     0%, 100% { transform: translateY(0px); }
                     50% { transform: translateY(-20px); }
@@ -236,7 +216,7 @@ const MembershipPricing = () => {
                         ].map((feature, idx) => (
                             <div 
                                 key={idx}
-                                className="group text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-rose-100 hover:border-rose-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                                className="group text-center p-4 bg-white/80 rounded-2xl border-2 border-rose-100 hover:border-rose-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                                 style={{ animationDelay: `${idx * 100}ms` }}
                             >
                                 <div className="text-3xl mb-2 transform group-hover:scale-110 transition-transform">{feature.icon}</div>
@@ -250,7 +230,7 @@ const MembershipPricing = () => {
 
                 {/* Payment Processing Overlay */}
                 {processingPayment && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
                         <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md mx-4 border-4 border-rose-200">
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="relative">
@@ -276,7 +256,7 @@ const MembershipPricing = () => {
                                 plan.popular 
                                     ? 'ring-4 ring-rose-400 scale-105 shadow-rose-300/50' 
                                     : 'hover:shadow-2xl'
-                            } bg-white/90 backdrop-blur-sm flex flex-col h-full border-2 border-rose-100`}
+                            } bg-white/90 flex flex-col h-full border-2 border-rose-100`}
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
                             {plan.popular && (
@@ -416,9 +396,9 @@ const MembershipPricing = () => {
                 </div>
 
                 {/* Feature Comparison Table */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden mb-12 border-2 border-rose-100">
+                <div className="bg-white/90 rounded-3xl shadow-2xl overflow-hidden mb-12 border-2 border-rose-100">
                     <div className="px-6 py-10 bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                        <div className="absolute inset-0 bg-white/10"></div>
                         <div className="relative z-10 text-center">
                             <div className="flex items-center justify-center mb-4">
                                 <Star className="w-8 h-8 text-white fill-white animate-pulse" />
@@ -519,7 +499,7 @@ const MembershipPricing = () => {
 
                 {/* Payment Security Section */}
                 <div className="bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 rounded-3xl p-10 mb-12 text-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                    <div className="absolute inset-0 bg-white/10"></div>
                     <div className="relative z-10">
                         <div className="flex items-center justify-center mb-6">
                             <Shield className="w-10 h-10 text-white mr-3" />
@@ -532,7 +512,7 @@ const MembershipPricing = () => {
                                 { icon: '🏦', title: 'Net Banking', subtitle: 'All Major Banks' },
                                 { icon: '⚡', title: 'Instant Access', subtitle: 'Immediate Activation' }
                             ].map((item, idx) => (
-                                <div key={idx} className="flex flex-col items-center p-4 bg-white/20 rounded-2xl backdrop-blur-sm hover:bg-white/30 transition-all">
+                                <div key={idx} className="flex flex-col items-center p-4 bg-white/20 rounded-2xl hover:bg-white/30 transition-all">
                                     <div className="text-4xl mb-3">{item.icon}</div>
                                     <div className="font-bold text-lg">{item.title}</div>
                                     <div className="text-sm opacity-90">{item.subtitle}</div>
@@ -543,7 +523,7 @@ const MembershipPricing = () => {
                 </div>
 
                 {/* FAQ Section */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-10 border-2 border-rose-100 shadow-xl mb-12">
+                <div className="bg-white/90 rounded-3xl p-10 border-2 border-rose-100 shadow-xl mb-12">
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center space-x-3 mb-4">
                             <div className="h-px bg-gradient-to-r from-transparent to-rose-300 w-16"></div>
