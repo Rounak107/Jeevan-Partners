@@ -21,6 +21,8 @@ import PaymentsDetailPage from './pages/PaymentsDetailPage';
 import ActivityDetailPage from './pages/ActivityDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AIKundliPage from './pages/AIKundliPage';
+import DashboardLogin from './components/DashboardLogin';
+import ProtectedDashboard from './components/ProtectedDashboard';
 import API from "./api";
 
 export default function App() {
@@ -73,6 +75,19 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/matches" element={<MatchesPage />} />
             
+            {/* Public routes */}
+        <Route path="/dashboard-login" element={<DashboardLogin />} />
+        
+        {/* Protected dashboard route */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedDashboard>
+              <Dashboard />
+            </ProtectedDashboard>
+          } 
+        />
+
             {/* Protected Routes */}
             <Route 
               path="/messages" 
