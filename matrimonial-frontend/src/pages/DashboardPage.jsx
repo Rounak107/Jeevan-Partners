@@ -7,6 +7,7 @@ const DashboardPage = () => {
     const [users, setUsers] = useState([]);
     const [payments, setPayments] = useState([]);
     const [activity, setActivity] = useState({});
+    const [meetInsights, setMeetInsights] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,38 +60,43 @@ const handleLogout = () => {
 };
     
     const fetchDashboardData = async () => {
-        try {
-            const [statsRes, usersRes, paymentsRes, activityRes] = await Promise.all([
-                API.get('/dashboard/stats'),
-                API.get('/dashboard/users?per_page=5'),
-                API.get('/dashboard/payments?per_page=5'),
-                API.get('/dashboard/activity?per_page=10')
-            ]);
+    try {
+        // ✅ FIXED: Added meetInsightsRes to the array
+        const [statsRes, usersRes, paymentsRes, activityRes, meetInsightsRes] = await Promise.all([
+            API.get('/dashboard/stats'),
+            API.get('/dashboard/users?per_page=5'),
+            API.get('/dashboard/payments?per_page=5'),
+            API.get('/dashboard/activity?per_page=10'),
+            API.get('/dashboard/meet-insights')
+        ]);
 
-            console.log('Dashboard API Responses:', {
-                stats: statsRes.data,
-                users: usersRes.data,
-                payments: paymentsRes.data,
-                activity: activityRes.data
-            });
+        console.log('Dashboard API Responses:', {
+            stats: statsRes.data,
+            users: usersRes.data,
+            payments: paymentsRes.data,
+            activity: activityRes.data,
+            meetInsights: meetInsightsRes.data // ✅ Now this will work
+        });
 
-            if (statsRes.data && statsRes.data.success) setStats(statsRes.data.data);
-            if (usersRes.data && usersRes.data.success) setUsers(usersRes.data.data?.data || []);
-            if (paymentsRes.data && paymentsRes.data.success) setPayments(paymentsRes.data.data?.data || []);
-            if (activityRes.data && activityRes.data.success) setActivity(activityRes.data.data || {});
+        if (statsRes.data && statsRes.data.success) setStats(statsRes.data.data);
+        if (usersRes.data && usersRes.data.success) setUsers(usersRes.data.data?.data || []);
+        if (paymentsRes.data && paymentsRes.data.success) setPayments(paymentsRes.data.data?.data || []);
+        if (activityRes.data && activityRes.data.success) setActivity(activityRes.data.data || {});
+        if (meetInsightsRes.data && meetInsightsRes.data.success) setMeetInsights(meetInsightsRes.data.data); // ✅ Now this will work
 
-            setLastUpdated(new Date());
-            
-        } catch (error) {
-            console.error('Failed to fetch dashboard data:', error);
-            console.error('Error details:', error.response?.data);
-            
-            setStats(null);
-            setUsers([]);
-            setPayments([]);
-            setActivity({});
-        }
-    };
+        setLastUpdated(new Date());
+        
+    } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        console.error('Error details:', error.response?.data);
+        
+        setStats(null);
+        setUsers([]);
+        setPayments([]);
+        setActivity({});
+        setMeetInsights(null);
+    }
+};
 
     const refreshData = () => {
         fetchDashboardData();
@@ -167,6 +173,12 @@ const handleLogout = () => {
                     💰 Payments
                 </button>
                 <button 
+    className={activeTab === 'meet' ? 'active' : ''}
+    onClick={() => setActiveTab('meet')}
+>
+    🤝 Meet Requests
+</button>
+                <button 
                     className={activeTab === 'activity' ? 'active' : ''}
                     onClick={() => setActiveTab('activity')}
                 >
@@ -180,6 +192,7 @@ const handleLogout = () => {
                 {activeTab === 'users' && <UsersTab users={users} />}
                 {activeTab === 'payments' && <PaymentsTab payments={payments} />}
                 {activeTab === 'activity' && <ActivityTab activity={activity} />}
+                {activeTab === 'meet' && <MeetTab meetInsights={meetInsights} />}
             </div>
         </div>
     );
@@ -515,6 +528,104 @@ const StatCard = ({ title, value, icon, color }) => {
             <div className="stat-content">
                 <h3>{value}</h3>
                 <p>{title}</p>
+            </div>
+        </div>
+    );
+};
+
+// Meet Tab Component
+const MeetTab = ({ meetInsights }) => {
+    if (!meetInsights) return <div className="no-data">No meet data available</div>;
+
+    return (
+        <div className="meet-tab">
+            {/* Meet Statistics Cards */}
+            <div className="stats-grid">
+                <StatCard 
+                    title="Total Meet Requests" 
+                    value={meetInsights.total_meet_requests}
+                    icon="🤝"
+                    color="#10B981"
+                />
+                <StatCard 
+                    title="Mutual Matches" 
+                    value={meetInsights.mutual_matches}
+                    icon="🎉"
+                    color="#F59E0B"
+                />
+                <StatCard 
+                    title="Pending Requests" 
+                    value={meetInsights.pending_requests}
+                    icon="⏳"
+                    color="#3B82F6"
+                />
+            </div>
+
+            {/* Mutual Matches Section */}
+            <div className="analytics-grid">
+                <div className="analytics-box">
+                    <div className="analytics-header">
+                        <h3>🎉 Mutual Matches</h3>
+                        <span className="badge success">{meetInsights.mutual_matches} matches</span>
+                    </div>
+                    <div className="analytics-content">
+                        {meetInsights.recent_mutual_matches?.length > 0 ? (
+                            meetInsights.recent_mutual_matches.map(match => (
+                                <div key={match.id} className="activity-item-card">
+                                    <div className="activity-avatar mutual-match">
+                                        ❤️
+                                    </div>
+                                    <div className="activity-details">
+                                        <p className="activity-text">
+                                            <strong>{match.sender?.name}</strong> and{" "}
+                                            <strong>{match.receiver?.name}</strong> want to meet!
+                                        </p>
+                                        <span className="activity-time">
+                                            {new Date(match.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="no-activity">No mutual matches yet</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* All Meet Requests Section */}
+                <div className="analytics-box">
+                    <div className="analytics-header">
+                        <h3>🤝 All Meet Requests</h3>
+                        <span className="badge">{meetInsights.total_meet_requests} total</span>
+                    </div>
+                    <div className="analytics-content">
+                        {meetInsights.recent_meet_requests?.length > 0 ? (
+                            meetInsights.recent_meet_requests.map(request => (
+                                <div key={request.id} className="activity-item-card">
+                                    <div className="activity-avatar">
+                                        {request.sender?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <div className="activity-details">
+                                        <p className="activity-text">
+                                            <strong>{request.sender?.name}</strong> wants to meet{" "}
+                                            <strong>{request.receiver?.name}</strong>
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className={`status-badge ${request.status}`}>
+                                                {request.status}
+                                            </span>
+                                            <span className="activity-time">
+                                                {new Date(request.created_at).toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="no-activity">No meet requests yet</div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

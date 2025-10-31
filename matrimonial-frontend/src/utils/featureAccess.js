@@ -10,6 +10,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': false,
       'likes': false,
       'quick_compatibility': false,
+      'meet_requests': false,
     },
     'starter': {
       'messaging': false,
@@ -18,6 +19,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': true,
       'likes': true,
       'quick_compatibility': false,
+      'meet_requests': true, 
     },
     'essential': {
       'messaging': true,
@@ -26,6 +28,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': true,
       'likes': true,
       'quick_compatibility': false,
+      'meet_requests': true, 
     },
     'popular': {
       'messaging': true,
@@ -34,6 +37,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': true,
       'likes': true,
       'quick_compatibility': true,
+      'meet_requests': true,
     },
     'premium assisted': {
       'messaging': true,
@@ -42,6 +46,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': true,
       'likes': true,
       'quick_compatibility': true,
+      'meet_requests': true, 
     }
   };
   
@@ -64,7 +69,8 @@ export const FEATURES = {
   AI_COMPANION: 'ai_companion',
   VIEW_PROFILES: 'view_profiles',
   LIKES: 'likes',
-  QUICK_COMPATIBILITY: 'quick_compatibility'
+  QUICK_COMPATIBILITY: 'quick_compatibility',
+  MEET_REQUESTS: 'meet_requests'
 };
 
 // Check if user can access a route/page
@@ -81,3 +87,4 @@ export const canAccessRoute = (userPlan, routeName) => {
   
   return routeAccess[routeName] !== undefined ? routeAccess[routeName] : true;
 };
+

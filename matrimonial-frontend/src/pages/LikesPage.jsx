@@ -35,6 +35,7 @@ export default function LikesPage() {
   const userPlan = userMembership?.plan_name?.toLowerCase() || 'free';
   const canMessage = hasFeatureAccess(userPlan, FEATURES.MESSAGING);
   const canAccessAIKundli = hasFeatureAccess(userPlan, FEATURES.AI_KUNDLI);
+  const canSendMeetRequest = hasFeatureAccess(userPlan, FEATURES.MEET_REQUESTS);
   const isPremiumAssisted = userPlan === 'premium assisted';
 
   // Debug logging
@@ -62,6 +63,28 @@ export default function LikesPage() {
       console.error("Error fetching current user:", err);
     }
   };
+
+const sendMeetRequest = async (userId) => {
+    try {
+        const res = await API.post(`/api/meet-requests/send/${userId}`);
+        
+        if (res.data.success) {
+            if (res.data.status === 'mutual') {
+                alert('🎉 Mutual Match! Both of you want to meet!');
+            } else {
+                alert('Meet request sent successfully!');
+            }
+        }
+    } catch (error) {
+        console.error('Error sending meet request:', error);
+        if (error.response?.data?.message) {
+            alert(error.response.data.message);
+        } else {
+            alert('Failed to send meet request');
+        }
+    }
+};
+
 
   const fetchUserMembership = async () => {
     try {
@@ -263,6 +286,16 @@ export default function LikesPage() {
                   >
                     View Profile
                   </button>
+
+                  // Add this button to your button section in the profile card
+{canSendMeetRequest && (
+    <button
+        onClick={() => sendMeetRequest(user.id || profile.user_id)}
+        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+    >
+        🤝 Want to Meet
+    </button>
+)}
                 </div>
 
                 {/* AI Response Display - Only show for Premium Assisted users */}
