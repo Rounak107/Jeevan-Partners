@@ -70,9 +70,9 @@ const sendMeetRequest = async (userId) => {
         
         if (res.data.success) {
             if (res.data.status === 'mutual') {
-                alert('🎉 Mutual Match! Both of you want to meet!');
+                alert('Meet request sent successfully! Our team will contact you for further procedure');
             } else {
-                alert('Meet request sent successfully!');
+                alert('Meet request sent successfully! Our team will contact you for further procedure');
             }
         }
     } catch (error) {
