@@ -287,15 +287,15 @@ const sendMeetRequest = async (userId) => {
                     View Profile
                   </button>
 
-                  // Add this button to your button section in the profile card
-{canSendMeetRequest && (
-    <button
-        onClick={() => sendMeetRequest(user.id || profile.user_id)}
-        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
-    >
-        🤝 Want to Meet
-    </button>
-)}
+                                    {/* Want to Meet Button - Show for all plans */}
+                  {canSendMeetRequest && (
+                    <button
+                      onClick={() => sendMeetRequest(user.id || profile.user_id)}
+                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      🤝 Want to Meet
+                    </button>
+                  )}
                 </div>
 
                 {/* AI Response Display - Only show for Premium Assisted users */}

@@ -10,7 +10,7 @@ export const getUserFeatureAccess = (userPlan) => {
       'view_profiles': false,
       'likes': false,
       'quick_compatibility': false,
-      'meet_requests': false,
+      'meet_requests': true,
     },
     'starter': {
       'messaging': false,
