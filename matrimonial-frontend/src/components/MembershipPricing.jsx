@@ -147,10 +147,7 @@ const MembershipPricing = () => {
                 '1 month of assisted introductions',
                 'Dedicated Relationship Manager',
                 'Priority chat + phone support',
-                'Meet them together - RM will help conduct dating',
-                'Personalized dating coordination',
-                'Date planning and logistics support',
-                'Post-date feedback sessions',
+                'Complete dating assistance: coordination, planning & feedback',
                 'Money-back guarantee (if < 3 quality matches in 45 days)'
             ],
             popular: false,
@@ -183,6 +180,10 @@ const MembershipPricing = () => {
         
         const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
         window.location.href = payuUrl;
+    };
+
+    const handleTablePayment = (plan) => {
+        handleDirectPayment(plan);
     };
 
     if (loading) {
@@ -285,19 +286,22 @@ const MembershipPricing = () => {
                     </div>
                 )}
 
-                {/* Pricing Cards */}
+                {/* Pricing Cards - FIXED SPACING */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16">
                     {plans.map((plan, index) => (
                         <div
                             key={plan.id}
                             className={`relative rounded-3xl shadow-xl overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
                                 plan.popular 
-                                    ? 'ring-4 ring-rose-400 scale-105 shadow-rose-300/50' 
+                                    ? 'ring-4 ring-rose-400 scale-[1.02] shadow-rose-300/50' 
                                     : plan.id === 'premium-plus'
-                                    ? 'animate-glow ring-4 ring-purple-500 scale-105 shadow-purple-300/50'
+                                    ? 'animate-glow ring-4 ring-purple-500 scale-[1.02] shadow-purple-300/50'
                                     : 'hover:shadow-2xl'
                             } bg-white/90 flex flex-col h-full border-2 border-rose-100`}
-                            style={{ animationDelay: `${index * 100}ms` }}
+                            style={{ 
+                                animationDelay: `${index * 100}ms`,
+                                marginBottom: plan.id === 'premium-plus' ? '2rem' : '0'
+                            }}
                         >
                             {plan.popular && (
                                 <>
@@ -325,20 +329,20 @@ const MembershipPricing = () => {
                                 </>
                             )}
                             
-                            <div className="p-8 flex-1 flex flex-col">
+                            <div className="p-6 flex-1 flex flex-col">
                                 {/* Plan Icon */}
-                                <div className="text-center mb-6">
+                                <div className="text-center mb-4">
                                     <div className="inline-block text-5xl mb-3 transform hover:scale-110 transition-transform">
                                         {plan.icon}
                                     </div>
                                 </div>
 
                                 {/* Plan Header */}
-                                <div className="text-center mb-8">
-                                    <h3 className="text-2xl font-serif font-bold text-gray-800 mb-4">
+                                <div className="text-center mb-6">
+                                    <h3 className="text-2xl font-serif font-bold text-gray-800 mb-3">
                                         {plan.name}
                                     </h3>
-                                    <div className="flex items-baseline justify-center mb-3">
+                                    <div className="flex items-baseline justify-center mb-2">
                                         <span className="text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
                                             ₹{plan.price}
                                         </span>
@@ -364,8 +368,8 @@ const MembershipPricing = () => {
                                 </div>
 
                                 {/* Key Features Badges */}
-                                <div className="grid grid-cols-2 gap-3 mb-8">
-                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
+                                <div className="grid grid-cols-2 gap-2 mb-6">
+                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.profileAccess.includes('Full') 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -375,7 +379,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">👁️ Profiles</div>
                                         <div className="text-xs mt-1">{plan.profileAccess}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.messaging !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -385,7 +389,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">💬 Messages</div>
                                         <div className="text-xs mt-1">{plan.messaging}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.likes !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -395,7 +399,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">❤️ Likes</div>
                                         <div className="text-xs mt-1">{plan.likes}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.aiKundli !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -409,18 +413,18 @@ const MembershipPricing = () => {
 
                                 {/* Special Dating Assistance Badge for Premium Plus */}
                                 {plan.id === 'premium-plus' && (
-                                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-2 border-purple-200 text-center">
+                                    <div className="mb-4 p-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-2 border-purple-200 text-center">
                                         <div className="flex items-center justify-center space-x-2">
                                             <Users className="w-4 h-4 text-purple-600" />
-                                            <span className="text-sm font-bold text-purple-700">Full Dating Assistance Included</span>
+                                            <span className="text-sm font-bold text-purple-700">Complete Dating Assistance</span>
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Features List */}
-                                <div className="flex-1 mb-8">
-                                    <div className="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent mb-6"></div>
-                                    <ul className="space-y-4">
+                                <div className="flex-1 mb-6">
+                                    <div className="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent mb-4"></div>
+                                    <ul className="space-y-3">
                                         {plan.features.map((feature, featureIndex) => (
                                             <li key={featureIndex} className="flex items-start group">
                                                 <div className={`rounded-full p-1 mr-3 flex-shrink-0 transition-colors ${
@@ -479,7 +483,7 @@ const MembershipPricing = () => {
                     ))}
                 </div>
 
-                {/* Feature Comparison Table */}
+                {/* Feature Comparison Table - FIXED BUTTONS */}
                 <div className="bg-white/90 rounded-3xl shadow-2xl overflow-hidden mb-12 border-2 border-rose-100">
                     <div className="px-6 py-10 bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10"></div>
@@ -563,7 +567,7 @@ const MembershipPricing = () => {
                                         </tr>
                                     ))}
                                     
-                                    {/* Action Buttons Row */}
+                                    {/* Action Buttons Row - FIXED: Now buttons are clickable */}
                                     <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
                                         <td className="px-8 py-8 text-lg font-serif font-bold text-gray-800 border-r border-rose-200">
                                             🎯 Get Started
@@ -573,7 +577,7 @@ const MembershipPricing = () => {
                                                 plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
                                             }`}>
                                                 <button
-                                                    onClick={() => handleDirectPayment(plan)}
+                                                    onClick={() => handleTablePayment(plan)}
                                                     disabled={processingPayment}
                                                     className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
                                                         plan.popular
@@ -581,11 +585,16 @@ const MembershipPricing = () => {
                                                             : plan.id === 'premium-plus'
                                                             ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
                                                             : plan.price === 0
-                                                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600'
                                                             : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
                                                     } ${processingPayment ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 >
-                                                    {plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
+                                                    {processingPayment ? (
+                                                        <div className="flex items-center justify-center">
+                                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                                                            Redirecting...
+                                                        </div>
+                                                    ) : plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
                                                 </button>
                                             </td>
                                         ))}
