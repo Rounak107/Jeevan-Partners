@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Crown, Sparkles, Shield, Check, Phone, Mail, Star } from 'lucide-react';
+import { Heart, Crown, Sparkles, Shield, Check, Phone, Mail, Star, Users } from 'lucide-react';
 
 const MembershipPricing = () => {
     const [plans, setPlans] = useState([]);
@@ -134,6 +134,37 @@ const MembershipPricing = () => {
             searchPriority: 'Top Priority',
             curatedMatches: '8-10 matches',
             icon: '💎'
+        },
+        {
+            id: 'premium-plus',
+            name: 'Premium Plus',
+            price: 5999,
+            currency: 'INR',
+            duration: '12 months',
+            features: [
+                'All Premium Assisted features included',
+                '1 Spotlight every month',
+                '1 month of assisted introductions',
+                'Dedicated Relationship Manager',
+                'Priority chat + phone support',
+                'Meet them together - RM will help conduct dating',
+                'Personalized dating coordination',
+                'Date planning and logistics support',
+                'Post-date feedback sessions',
+                'Money-back guarantee (if < 3 quality matches in 45 days)'
+            ],
+            popular: false,
+            profileAccess: 'Full Access ++',
+            messaging: 'Unlimited',
+            likes: 'Unlimited',
+            aiKundli: 'Full Access ++',
+            spotlight: '1 per month +',
+            rmSupport: 'Dedicated RM',
+            profileHighlight: 'Permanent VIP',
+            searchPriority: 'VIP Priority',
+            curatedMatches: '10-12 quality matches',
+            datingAssistance: 'Full Support',
+            icon: '🚀'
         }
     ];
 
@@ -186,6 +217,13 @@ const MembershipPricing = () => {
                     background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%);
                     background-size: 1000px 100%;
                 }
+                @keyframes glow {
+                    0%, 100% { box-shadow: 0 0 20px rgba(255, 105, 180, 0.3); }
+                    50% { box-shadow: 0 0 40px rgba(255, 105, 180, 0.6); }
+                }
+                .animate-glow {
+                    animation: glow 2s ease-in-out infinite;
+                }
             `}</style>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -212,7 +250,7 @@ const MembershipPricing = () => {
                             { icon: '👁️', label: 'View Profiles', color: 'from-rose-400 to-pink-400' },
                             { icon: '💬', label: 'Messaging', color: 'from-pink-400 to-purple-400' },
                             { icon: '🤖', label: 'AI Kundli', color: 'from-purple-400 to-indigo-400' },
-                            { icon: '⭐', label: 'Spotlight', color: 'from-amber-400 to-orange-400' }
+                            { icon: '👥', label: 'Dating Help', color: 'from-amber-400 to-orange-400' }
                         ].map((feature, idx) => (
                             <div 
                                 key={idx}
@@ -248,13 +286,15 @@ const MembershipPricing = () => {
                 )}
 
                 {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
                     {plans.map((plan, index) => (
                         <div
                             key={plan.id}
                             className={`relative rounded-3xl shadow-xl overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
                                 plan.popular 
                                     ? 'ring-4 ring-rose-400 scale-105 shadow-rose-300/50' 
+                                    : plan.id === 'premium-plus'
+                                    ? 'animate-glow ring-4 ring-purple-500 scale-105 shadow-purple-300/50'
                                     : 'hover:shadow-2xl'
                             } bg-white/90 flex flex-col h-full border-2 border-rose-100`}
                             style={{ animationDelay: `${index * 100}ms` }}
@@ -267,6 +307,19 @@ const MembershipPricing = () => {
                                             <Crown className="w-4 h-4 fill-white" />
                                             <span>MOST POPULAR</span>
                                             <Crown className="w-4 h-4 fill-white" />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            
+                            {plan.id === 'premium-plus' && (
+                                <>
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 animate-shimmer"></div>
+                                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
+                                            <Sparkles className="w-4 h-4 fill-white" />
+                                            <span>VIP SERVICE</span>
+                                            <Sparkles className="w-4 h-4 fill-white" />
                                         </div>
                                     </div>
                                 </>
@@ -314,7 +367,9 @@ const MembershipPricing = () => {
                                 <div className="grid grid-cols-2 gap-2 mb-6">
                                     <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.profileAccess.includes('Full') 
-                                            ? 'bg-green-50 border-green-200 text-green-700' 
+                                            ? plan.id === 'premium-plus'
+                                                ? 'bg-purple-50 border-purple-200 text-purple-700'
+                                                : 'bg-green-50 border-green-200 text-green-700'
                                             : 'bg-gray-50 border-gray-200 text-gray-500'
                                     }`}>
                                         <div className="font-semibold">👁️ Profiles</div>
@@ -322,7 +377,9 @@ const MembershipPricing = () => {
                                     </div>
                                     <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.messaging !== 'Not Available' 
-                                            ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                                            ? plan.id === 'premium-plus'
+                                                ? 'bg-purple-50 border-purple-200 text-purple-700'
+                                                : 'bg-blue-50 border-blue-200 text-blue-700'
                                             : 'bg-gray-50 border-gray-200 text-gray-500'
                                     }`}>
                                         <div className="font-semibold">💬 Messages</div>
@@ -330,7 +387,9 @@ const MembershipPricing = () => {
                                     </div>
                                     <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.likes !== 'Not Available' 
-                                            ? 'bg-purple-50 border-purple-200 text-purple-700' 
+                                            ? plan.id === 'premium-plus'
+                                                ? 'bg-purple-50 border-purple-200 text-purple-700'
+                                                : 'bg-purple-50 border-purple-200 text-purple-700'
                                             : 'bg-gray-50 border-gray-200 text-gray-500'
                                     }`}>
                                         <div className="font-semibold">❤️ Likes</div>
@@ -338,7 +397,9 @@ const MembershipPricing = () => {
                                     </div>
                                     <div className={`text-xs text-center p-2 rounded-lg border-2 ${
                                         plan.aiKundli !== 'Not Available' 
-                                            ? 'bg-orange-50 border-orange-200 text-orange-700' 
+                                            ? plan.id === 'premium-plus'
+                                                ? 'bg-purple-50 border-purple-200 text-purple-700'
+                                                : 'bg-orange-50 border-orange-200 text-orange-700'
                                             : 'bg-gray-50 border-gray-200 text-gray-500'
                                     }`}>
                                         <div className="font-semibold">🤖 AI</div>
@@ -346,14 +407,30 @@ const MembershipPricing = () => {
                                     </div>
                                 </div>
 
+                                {/* Special Dating Assistance Badge for Premium Plus */}
+                                {plan.id === 'premium-plus' && (
+                                    <div className="mb-4 p-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-2 border-purple-200 text-center">
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <Users className="w-4 h-4 text-purple-600" />
+                                            <span className="text-sm font-bold text-purple-700">Full Dating Assistance Included</span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Features List */}
                                 <div className="flex-1 mb-6">
                                     <div className="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent mb-4"></div>
                                     <ul className="space-y-3">
                                         {plan.features.map((feature, featureIndex) => (
                                             <li key={featureIndex} className="flex items-start group">
-                                                <div className="bg-rose-100 rounded-full p-1 mr-3 flex-shrink-0 group-hover:bg-rose-200 transition-colors">
-                                                    <Check className="w-3 h-3 text-rose-600" />
+                                                <div className={`rounded-full p-1 mr-3 flex-shrink-0 transition-colors ${
+                                                    plan.id === 'premium-plus'
+                                                        ? 'bg-purple-100 group-hover:bg-purple-200'
+                                                        : 'bg-rose-100 group-hover:bg-rose-200'
+                                                }`}>
+                                                    <Check className={`w-3 h-3 ${
+                                                        plan.id === 'premium-plus' ? 'text-purple-600' : 'text-rose-600'
+                                                    }`} />
                                                 </div>
                                                 <span className="text-gray-600 text-sm leading-relaxed">{feature}</span>
                                             </li>
@@ -368,6 +445,8 @@ const MembershipPricing = () => {
                                     className={`w-full py-4 px-6 rounded-2xl font-semibold transition-all duration-300 mt-auto transform hover:scale-105 ${
                                         plan.popular
                                             ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+                                            : plan.id === 'premium-plus'
+                                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl'
                                             : plan.price === 0
                                             ? 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white'
                                             : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white shadow-md hover:shadow-lg'
@@ -382,6 +461,11 @@ const MembershipPricing = () => {
                                         <div className="flex items-center justify-center space-x-2">
                                             <Sparkles className="w-5 h-5" />
                                             <span>Start Free</span>
+                                        </div>
+                                    ) : plan.id === 'premium-plus' ? (
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <Users className="w-5 h-5 fill-white" />
+                                            <span>VIP Service - ₹{plan.price}</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center space-x-2">
@@ -422,7 +506,7 @@ const MembershipPricing = () => {
                                     </th>
                                     {plans.map((plan) => (
                                         <th key={plan.id} className={`px-4 py-6 text-center border-r border-rose-200 min-w-52 ${
-                                            plan.popular ? 'bg-rose-100' : ''
+                                            plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
                                         }`}>
                                             <div className="text-2xl mb-2">{plan.icon}</div>
                                             <div className="text-lg font-serif font-bold text-gray-800">{plan.name}</div>
@@ -436,6 +520,12 @@ const MembershipPricing = () => {
                                                     <span>Popular</span>
                                                 </span>
                                             )}
+                                            {plan.id === 'premium-plus' && (
+                                                <span className="inline-flex items-center space-x-1 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold mt-2">
+                                                    <Sparkles className="w-3 h-3 fill-white" />
+                                                    <span>VIP</span>
+                                                </span>
+                                            )}
                                         </th>
                                     ))}
                                 </tr>
@@ -447,7 +537,8 @@ const MembershipPricing = () => {
                                     { label: '❤️ Like Profiles', key: 'likes', goodValue: 'Not Available', inverse: true },
                                     { label: '🤖 AI Kundli', key: 'aiKundli', goodValue: 'Not Available', inverse: true },
                                     { label: '⭐ Spotlight', key: 'spotlight', goodValue: 'Not Included', inverse: true },
-                                    { label: '👨‍💼 RM Support', key: 'rmSupport', goodValue: 'Included' }
+                                    { label: '👨‍💼 RM Support', key: 'rmSupport', goodValue: 'Included' },
+                                    { label: '👥 Dating Assistance', key: 'datingAssistance', goodValue: 'Full Support' }
                                 ].map((feature, idx) => (
                                     <tr key={idx} className={idx % 2 === 0 ? 'bg-rose-50/30' : 'bg-white'}>
                                         <td className="px-6 py-4 text-sm font-semibold text-gray-700 border-r border-rose-200">
@@ -455,13 +546,17 @@ const MembershipPricing = () => {
                                         </td>
                                         {plans.map((plan) => (
                                             <td key={plan.id} className={`px-4 py-4 text-center text-sm font-semibold border-r border-rose-200 ${
-                                                plan.popular ? 'bg-rose-50' : ''
+                                                plan.popular ? 'bg-rose-50' : plan.id === 'premium-plus' ? 'bg-purple-50' : ''
                                             } ${
                                                 feature.inverse 
-                                                    ? plan[feature.key] !== feature.goodValue ? 'text-green-600' : 'text-gray-400'
-                                                    : plan[feature.key].includes(feature.goodValue) ? 'text-green-600' : 'text-gray-400'
+                                                    ? plan[feature.key] !== feature.goodValue 
+                                                        ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
+                                                        : 'text-gray-400'
+                                                    : plan[feature.key] && plan[feature.key].includes(feature.goodValue) 
+                                                        ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
+                                                        : 'text-gray-400'
                                             }`}>
-                                                {plan[feature.key]}
+                                                {plan[feature.key] || 'Not Available'}
                                             </td>
                                         ))}
                                     </tr>
@@ -474,7 +569,7 @@ const MembershipPricing = () => {
                                     </td>
                                     {plans.map((plan) => (
                                         <td key={plan.id} className={`px-4 py-4 text-center border-r border-rose-200 ${
-                                            plan.popular ? 'bg-rose-100' : ''
+                                            plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
                                         }`}>
                                             <button
                                                 onClick={() => handleDirectPayment(plan)}
@@ -482,6 +577,8 @@ const MembershipPricing = () => {
                                                 className={`w-full py-3 px-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
                                                     plan.popular
                                                         ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg'
+                                                        : plan.id === 'premium-plus'
+                                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
                                                         : plan.price === 0
                                                         ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
                                                         : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
@@ -544,12 +641,12 @@ const MembershipPricing = () => {
                             {
                                 icon: '💰',
                                 question: 'Is there a refund policy?',
-                                answer: 'Premium Assisted plan offers money-back guarantee if you get less than 3 curated matches in 45 days.'
+                                answer: 'Premium and Premium Plus plans offer money-back guarantee if you get less than quality matches in 45 days.'
                             },
                             {
-                                icon: '🤖',
-                                question: 'How does AI Kundli work?',
-                                answer: 'AI Kundli analyzes birth charts for compatibility matching. Available in Popular and Premium plans.'
+                                icon: '🤝',
+                                question: 'What is Dating Assistance?',
+                                answer: 'In Premium Plus, our Relationship Manager helps coordinate and conduct dating meetings for you.'
                             },
                             {
                                 icon: '⭐',
