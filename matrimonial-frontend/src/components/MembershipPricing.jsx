@@ -286,7 +286,7 @@ const MembershipPricing = () => {
                 )}
 
                 {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16">
                     {plans.map((plan, index) => (
                         <div
                             key={plan.id}
@@ -325,20 +325,20 @@ const MembershipPricing = () => {
                                 </>
                             )}
                             
-                            <div className="p-6 flex-1 flex flex-col">
+                            <div className="p-8 flex-1 flex flex-col">
                                 {/* Plan Icon */}
-                                <div className="text-center mb-4">
+                                <div className="text-center mb-6">
                                     <div className="inline-block text-5xl mb-3 transform hover:scale-110 transition-transform">
                                         {plan.icon}
                                     </div>
                                 </div>
 
                                 {/* Plan Header */}
-                                <div className="text-center mb-6">
-                                    <h3 className="text-2xl font-serif font-bold text-gray-800 mb-3">
+                                <div className="text-center mb-8">
+                                    <h3 className="text-2xl font-serif font-bold text-gray-800 mb-4">
                                         {plan.name}
                                     </h3>
-                                    <div className="flex items-baseline justify-center mb-2">
+                                    <div className="flex items-baseline justify-center mb-3">
                                         <span className="text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
                                             ₹{plan.price}
                                         </span>
@@ -364,8 +364,8 @@ const MembershipPricing = () => {
                                 </div>
 
                                 {/* Key Features Badges */}
-                                <div className="grid grid-cols-2 gap-2 mb-6">
-                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
                                         plan.profileAccess.includes('Full') 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -375,7 +375,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">👁️ Profiles</div>
                                         <div className="text-xs mt-1">{plan.profileAccess}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
                                         plan.messaging !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -385,7 +385,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">💬 Messages</div>
                                         <div className="text-xs mt-1">{plan.messaging}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
                                         plan.likes !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -395,7 +395,7 @@ const MembershipPricing = () => {
                                         <div className="font-semibold">❤️ Likes</div>
                                         <div className="text-xs mt-1">{plan.likes}</div>
                                     </div>
-                                    <div className={`text-xs text-center p-2 rounded-lg border-2 ${
+                                    <div className={`text-xs text-center p-3 rounded-lg border-2 ${
                                         plan.aiKundli !== 'Not Available' 
                                             ? plan.id === 'premium-plus'
                                                 ? 'bg-purple-50 border-purple-200 text-purple-700'
@@ -409,7 +409,7 @@ const MembershipPricing = () => {
 
                                 {/* Special Dating Assistance Badge for Premium Plus */}
                                 {plan.id === 'premium-plus' && (
-                                    <div className="mb-4 p-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-2 border-purple-200 text-center">
+                                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-2 border-purple-200 text-center">
                                         <div className="flex items-center justify-center space-x-2">
                                             <Users className="w-4 h-4 text-purple-600" />
                                             <span className="text-sm font-bold text-purple-700">Full Dating Assistance Included</span>
@@ -418,9 +418,9 @@ const MembershipPricing = () => {
                                 )}
 
                                 {/* Features List */}
-                                <div className="flex-1 mb-6">
-                                    <div className="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent mb-4"></div>
-                                    <ul className="space-y-3">
+                                <div className="flex-1 mb-8">
+                                    <div className="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent mb-6"></div>
+                                    <ul className="space-y-4">
                                         {plan.features.map((feature, featureIndex) => (
                                             <li key={featureIndex} className="flex items-start group">
                                                 <div className={`rounded-full p-1 mr-3 flex-shrink-0 transition-colors ${
@@ -498,99 +498,101 @@ const MembershipPricing = () => {
                     </div>
                     
                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
-                                    <th className="px-6 py-6 text-left text-sm font-serif font-bold text-gray-800 border-r border-rose-200 min-w-48">
-                                        Features
-                                    </th>
-                                    {plans.map((plan) => (
-                                        <th key={plan.id} className={`px-4 py-6 text-center border-r border-rose-200 min-w-52 ${
-                                            plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
-                                        }`}>
-                                            <div className="text-2xl mb-2">{plan.icon}</div>
-                                            <div className="text-lg font-serif font-bold text-gray-800">{plan.name}</div>
-                                            <div className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mt-2">
-                                                ₹{plan.price}
-                                                {plan.price > 0 && <span className="text-sm text-gray-500">/{plan.duration.split(' ')[0]}</span>}
-                                            </div>
-                                            {plan.popular && (
-                                                <span className="inline-flex items-center space-x-1 bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold mt-2">
-                                                    <Crown className="w-3 h-3 fill-white" />
-                                                    <span>Popular</span>
-                                                </span>
-                                            )}
-                                            {plan.id === 'premium-plus' && (
-                                                <span className="inline-flex items-center space-x-1 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold mt-2">
-                                                    <Sparkles className="w-3 h-3 fill-white" />
-                                                    <span>VIP</span>
-                                                </span>
-                                            )}
+                        <div className="min-w-[1200px]">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
+                                        <th className="px-8 py-8 text-left text-lg font-serif font-bold text-gray-800 border-r border-rose-200 w-64">
+                                            Features
                                         </th>
+                                        {plans.map((plan) => (
+                                            <th key={plan.id} className={`px-6 py-8 text-center border-r border-rose-200 w-60 last:border-r-0 ${
+                                                plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
+                                            }`}>
+                                                <div className="text-3xl mb-3">{plan.icon}</div>
+                                                <div className="text-xl font-serif font-bold text-gray-800 mb-2">{plan.name}</div>
+                                                <div className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mt-2">
+                                                    ₹{plan.price}
+                                                    {plan.price > 0 && <span className="text-sm text-gray-500">/{plan.duration.split(' ')[0]}</span>}
+                                                </div>
+                                                {plan.popular && (
+                                                    <span className="inline-flex items-center space-x-1 bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold mt-2">
+                                                        <Crown className="w-3 h-3 fill-white" />
+                                                        <span>Popular</span>
+                                                    </span>
+                                                )}
+                                                {plan.id === 'premium-plus' && (
+                                                    <span className="inline-flex items-center space-x-1 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold mt-2">
+                                                        <Sparkles className="w-3 h-3 fill-white" />
+                                                        <span>VIP</span>
+                                                    </span>
+                                                )}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-rose-100">
+                                    {[
+                                        { label: '👁️ Profile Access', key: 'profileAccess', goodValue: 'Full' },
+                                        { label: '💬 Messaging', key: 'messaging', goodValue: 'Not Available', inverse: true },
+                                        { label: '❤️ Like Profiles', key: 'likes', goodValue: 'Not Available', inverse: true },
+                                        { label: '🤖 AI Kundli', key: 'aiKundli', goodValue: 'Not Available', inverse: true },
+                                        { label: '⭐ Spotlight', key: 'spotlight', goodValue: 'Not Included', inverse: true },
+                                        { label: '👨‍💼 RM Support', key: 'rmSupport', goodValue: 'Included' },
+                                        { label: '👥 Dating Assistance', key: 'datingAssistance', goodValue: 'Full Support' }
+                                    ].map((feature, idx) => (
+                                        <tr key={idx} className={idx % 2 === 0 ? 'bg-rose-50/30' : 'bg-white'}>
+                                            <td className="px-8 py-6 text-base font-semibold text-gray-700 border-r border-rose-200">
+                                                {feature.label}
+                                            </td>
+                                            {plans.map((plan) => (
+                                                <td key={plan.id} className={`px-6 py-6 text-center text-base font-semibold border-r border-rose-200 last:border-r-0 ${
+                                                    plan.popular ? 'bg-rose-50' : plan.id === 'premium-plus' ? 'bg-purple-50' : ''
+                                                } ${
+                                                    feature.inverse 
+                                                        ? plan[feature.key] !== feature.goodValue 
+                                                            ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
+                                                            : 'text-gray-400'
+                                                        : plan[feature.key] && plan[feature.key].includes(feature.goodValue) 
+                                                            ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
+                                                            : 'text-gray-400'
+                                                }`}>
+                                                    {plan[feature.key] || 'Not Available'}
+                                                </td>
+                                            ))}
+                                        </tr>
                                     ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-rose-100">
-                                {[
-                                    { label: '👁️ Profile Access', key: 'profileAccess', goodValue: 'Full' },
-                                    { label: '💬 Messaging', key: 'messaging', goodValue: 'Not Available', inverse: true },
-                                    { label: '❤️ Like Profiles', key: 'likes', goodValue: 'Not Available', inverse: true },
-                                    { label: '🤖 AI Kundli', key: 'aiKundli', goodValue: 'Not Available', inverse: true },
-                                    { label: '⭐ Spotlight', key: 'spotlight', goodValue: 'Not Included', inverse: true },
-                                    { label: '👨‍💼 RM Support', key: 'rmSupport', goodValue: 'Included' },
-                                    { label: '👥 Dating Assistance', key: 'datingAssistance', goodValue: 'Full Support' }
-                                ].map((feature, idx) => (
-                                    <tr key={idx} className={idx % 2 === 0 ? 'bg-rose-50/30' : 'bg-white'}>
-                                        <td className="px-6 py-4 text-sm font-semibold text-gray-700 border-r border-rose-200">
-                                            {feature.label}
+                                    
+                                    {/* Action Buttons Row */}
+                                    <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
+                                        <td className="px-8 py-8 text-lg font-serif font-bold text-gray-800 border-r border-rose-200">
+                                            🎯 Get Started
                                         </td>
                                         {plans.map((plan) => (
-                                            <td key={plan.id} className={`px-4 py-4 text-center text-sm font-semibold border-r border-rose-200 ${
-                                                plan.popular ? 'bg-rose-50' : plan.id === 'premium-plus' ? 'bg-purple-50' : ''
-                                            } ${
-                                                feature.inverse 
-                                                    ? plan[feature.key] !== feature.goodValue 
-                                                        ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
-                                                        : 'text-gray-400'
-                                                    : plan[feature.key] && plan[feature.key].includes(feature.goodValue) 
-                                                        ? plan.id === 'premium-plus' ? 'text-purple-600 font-bold' : 'text-green-600'
-                                                        : 'text-gray-400'
+                                            <td key={plan.id} className={`px-6 py-8 text-center border-r border-rose-200 last:border-r-0 ${
+                                                plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
                                             }`}>
-                                                {plan[feature.key] || 'Not Available'}
+                                                <button
+                                                    onClick={() => handleDirectPayment(plan)}
+                                                    disabled={processingPayment}
+                                                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                                        plan.popular
+                                                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg'
+                                                            : plan.id === 'premium-plus'
+                                                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
+                                                            : plan.price === 0
+                                                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                                            : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
+                                                    } ${processingPayment ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                >
+                                                    {plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
+                                                </button>
                                             </td>
                                         ))}
                                     </tr>
-                                ))}
-                                
-                                {/* Action Buttons Row */}
-                                <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
-                                    <td className="px-6 py-6 text-sm font-serif font-bold text-gray-800 border-r border-rose-200">
-                                        🎯 Get Started
-                                    </td>
-                                    {plans.map((plan) => (
-                                        <td key={plan.id} className={`px-4 py-4 text-center border-r border-rose-200 ${
-                                            plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
-                                        }`}>
-                                            <button
-                                                onClick={() => handleDirectPayment(plan)}
-                                                disabled={processingPayment}
-                                                className={`w-full py-3 px-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
-                                                    plan.popular
-                                                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg'
-                                                        : plan.id === 'premium-plus'
-                                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
-                                                        : plan.price === 0
-                                                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                                                        : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
-                                                } ${processingPayment ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            >
-                                                {plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
-                                            </button>
-                                        </td>
-                                    ))}
-                                </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
