@@ -184,16 +184,14 @@ const MembershipPricing = () => {
     };
 
     const handleTablePayment = (plan) => {
+        console.log('Table payment clicked for:', plan.id); // Debug log
+        
         if (plan.price === 0) {
             alert('Free plan selected! You can start using the free features immediately.');
             return;
         }
         
         setProcessingTablePayment(plan.id);
-        
-        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
-        window.location.href = payuUrl;
-    };
 
     if (loading) {
         return (
@@ -576,37 +574,42 @@ const MembershipPricing = () => {
                                         </tr>
                                     ))}
                                     
-                                    {/* Action Buttons Row - FIXED: Now buttons are clickable */}
+                                    {/* Action Buttons Row - FIXED: Now buttons are properly working */}
                                     <tr className="bg-gradient-to-r from-rose-50 to-pink-50">
                                         <td className="px-8 py-8 text-lg font-serif font-bold text-gray-800 border-r border-rose-200">
                                             🎯 Get Started
                                         </td>
-                                        {plans.map((plan) => (
-                                            <td key={plan.id} className={`px-6 py-8 text-center border-r border-rose-200 last:border-r-0 ${
-                                                plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
-                                            }`}>
-                                                <button
-                                                    onClick={() => handleTablePayment(plan)}
-                                                    disabled={processingTablePayment === plan.id || processingPayment}
-                                                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
-                                                        plan.popular
-                                                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg'
-                                                            : plan.id === 'premium-plus'
-                                                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
-                                                            : plan.price === 0
-                                                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600'
-                                                            : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
-                                                    } ${(processingTablePayment === plan.id || processingPayment) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                >
-                                                    {(processingTablePayment === plan.id || processingPayment) ? (
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                                                            Redirecting...
-                                                        </div>
-                                                    ) : plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
-                                                </button>
-                                            </td>
-                                        ))}
+                                        {plans.map((plan) => {
+                                            const isProcessing = processingTablePayment === plan.id;
+                                            const isDisabled = isProcessing || processingPayment;
+                                            
+                                            return (
+                                                <td key={plan.id} className={`px-6 py-8 text-center border-r border-rose-200 last:border-r-0 ${
+                                                    plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
+                                                }`}>
+                                                    <button
+                                                        onClick={() => handleTablePayment(plan)}
+                                                        disabled={isDisabled}
+                                                        className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                                            plan.popular
+                                                                ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg'
+                                                                : plan.id === 'premium-plus'
+                                                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
+                                                                : plan.price === 0
+                                                                ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600'
+                                                                : 'bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white'
+                                                        } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        {isProcessing ? (
+                                                            <div className="flex items-center justify-center">
+                                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                                                                Redirecting...
+                                                            </div>
+                                                        ) : plan.price === 0 ? 'Start Free' : `Pay ₹${plan.price}`}
+                                                    </button>
+                                                </td>
+                                            );
+                                        })}
                                     </tr>
                                 </tbody>
                             </table>
