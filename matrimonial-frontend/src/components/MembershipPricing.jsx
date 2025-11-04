@@ -192,6 +192,7 @@ const MembershipPricing = () => {
         }
         
         setProcessingTablePayment(plan.id);
+    }
 
     if (loading) {
         return (
