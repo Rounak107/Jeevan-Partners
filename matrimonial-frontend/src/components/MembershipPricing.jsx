@@ -4,7 +4,6 @@ import { Heart, Crown, Sparkles, Shield, Check, Phone, Mail, Star, Users } from 
 const MembershipPricing = () => {
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState(null);
     const [processingPayment, setProcessingPayment] = useState(false);
     const [processingTablePayment, setProcessingTablePayment] = useState(null);
 
@@ -184,7 +183,7 @@ const MembershipPricing = () => {
     };
 
     const handleTablePayment = (plan) => {
-        console.log('Table payment clicked for:', plan.id); // Debug log
+        console.log('Table payment clicked for:', plan.id);
         
         if (plan.price === 0) {
             alert('Free plan selected! You can start using the free features immediately.');
@@ -192,7 +191,13 @@ const MembershipPricing = () => {
         }
         
         setProcessingTablePayment(plan.id);
-    }
+        
+        // Add a small delay to show the loading state
+        setTimeout(() => {
+            const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
+            window.location.href = payuUrl;
+        }, 500);
+    };
 
     if (loading) {
         return (
