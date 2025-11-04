@@ -171,29 +171,34 @@ const MembershipPricing = () => {
         setLoading(false);
     }, []);
 
-    const handleDirectPayment = (plan) => {
-        if (plan.price === 0) {
-            alert('Free plan selected! You can start using the free features immediately.');
-            return;
-        }
-        
-        setProcessingPayment(true);
-        
-        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
-        window.location.href = payuUrl;
-    };
+    const handleDirectPayment = async (plan) => {
+  if (plan.price === 0) {
+    alert('Free plan selected! You can start using the free features immediately.');
+    return;
+  }
+  setProcessingPayment(true);
 
-    const handleTablePayment = (plan) => {
-        if (plan.price === 0) {
-            alert('Free plan selected! You can start using the free features immediately.');
-            return;
-        }
-        
-        setProcessingTablePayment(plan.id);
-        
-        const payuUrl = `https://u.payu.in/xIIMzZL63pcG?plan=${plan.id}&amount=${plan.price}&plan_name=${encodeURIComponent(plan.name)}`;
-        window.location.href = payuUrl;
-    };
+  try {
+    const response = await API.post('/payments/initiate', {
+      plan_id: plan.id,
+      plan_name: plan.name,
+      amount: plan.price,
+      currency: 'INR'
+    });
+
+    if (response.data.success && response.data.payment_form) {
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(response.data.payment_form);
+      newWindow.document.close();
+    } else {
+      alert('Could not initiate payment. Please try again.');
+    }
+  } catch (err) {
+    alert('Payment initiation failed. Please try again.');
+  }
+  setProcessingPayment(false);
+};
+
 
     if (loading) {
         return (
@@ -586,7 +591,8 @@ const MembershipPricing = () => {
                                                 plan.popular ? 'bg-rose-100' : plan.id === 'premium-plus' ? 'bg-purple-100' : ''
                                             }`}>
                                                 <button
-                                                    onClick={() => handleTablePayment(plan)}
+                                                   onClick={() => handleDirectPayment(plan)}
+
                                                     disabled={processingTablePayment === plan.id || processingPayment}
                                                     className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
                                                         plan.popular
