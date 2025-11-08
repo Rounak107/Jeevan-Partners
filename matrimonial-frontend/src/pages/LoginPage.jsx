@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api";
 import { setToken } from "../auth";
 
-// You may use a wedding-related background image or floral SVGs.
-// Replace the image URL below with your own hosted asset if required.
 const bgStyle = {
   background: 'linear-gradient(135deg, #ffecec 0%, #fff7fb 100%)',
   minHeight: '100vh',
-  backgroundImage: 'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?fit=crop&w=1000&q=80")', // optional wedding bg image
+  backgroundImage: 'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?fit=crop&w=1000&q=80")',
   backgroundSize: 'cover',
   backgroundRepeat: 'no-repeat',
 };
@@ -21,17 +19,59 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Initialize CSRF token when component mounts
+  useEffect(() => {
+    initializeCSRF();
+  }, []);
+
+  const initializeCSRF = async () => {
+    try {
+      // Get CSRF cookie before making any requests
+      await API.get("/sanctum/csrf-cookie", {
+        timeout: 5000 // 5 second timeout
+      });
+      console.log("CSRF token initialized");
+    } catch (err) {
+      console.warn("CSRF token initialization failed, continuing anyway:", err.message);
+      // Don't set error here - we can still try to login
+    }
+  };
+
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
+    
     try {
-      const res = await API.post("/api/login", { email, password });
+      // Ensure we have CSRF token before login
+      await initializeCSRF();
+      
+      const res = await API.post("/api/login", { 
+        email, 
+        password 
+      }, {
+        timeout: 10000 // 10 second timeout
+      });
+      
       setToken(res.data.access_token);
       navigate("/matches");
     } catch (err) {
-      console.error(err);
-      setError(err?.response?.data?.message || "Invalid credentials");
+      console.error("Login error:", err);
+      
+      // Handle specific error cases
+      if (err.code === 'ECONNABORTED') {
+        setError("Request timeout. Please try again.");
+      } else if (err.response?.status === 422) {
+        setError("Invalid email or password format.");
+      } else if (err.response?.status === 401) {
+        setError("Invalid email or password.");
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -54,7 +94,6 @@ export default function LoginPage() {
 
         <div className="max-w-sm w-full bg-white bg-opacity-90 rounded-2xl shadow-xl p-8 border border-pink-100 relative">
           <div className="absolute -left-6 -top-6">
-            {/* Decorative floral or heart SVG */}
             <svg width="60" height="60" fill="none">
               <path d="M30 10c5 0 8 6 8 8s-4 8-8 10c-4-2-8-8-8-10s3-8 8-8z" fill="#FFD6E0"/>
             </svg>
@@ -65,7 +104,7 @@ export default function LoginPage() {
             Welcome to the beginning of your forever. Please login to continue!
           </p>
 
-          {error && <div className="bg-pink-200 text-pink-800 p-2 rounded mb-4 border border-pink-300">{error}</div>}
+          {error && <div className="bg-pink-200 text-pink-800 p-3 rounded mb-4 border border-pink-300">{error}</div>}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <input
@@ -75,6 +114,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
 
             <div className="relative">
@@ -85,11 +125,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
               <button
                 type="button"
-                className="absolute right-3 top-3 text-pink-400"
+                className="absolute right-3 top-3 text-pink-400 disabled:opacity-50"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
                 aria-label="Toggle Show Password"
               >
                 {showPassword ? "💞" : "👁️"}
@@ -98,7 +140,8 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <button
-                className="bg-pink-500 px-6 py-2 rounded-full text-white font-semibold shadow-md hover:bg-pink-400 transition-all disabled:opacity-50"
+                type="submit"
+                className="bg-pink-500 px-6 py-2 rounded-full text-white font-semibold shadow-md hover:bg-pink-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? "Logging in…" : "Login"}
@@ -116,7 +159,6 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Footer wedding quote */}
           <div className="mt-8 text-center text-xs text-pink-500 font-serif italic">
             "Two hearts, one login, endless possibilities."
           </div>
